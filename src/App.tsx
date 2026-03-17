@@ -1,168 +1,117 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
+import { useEffect, useRef, useState } from 'react'
 
-function App() {
-  const [dark, setDark] = useState(true);
+const images = [
+  '/images/11d2f7cd-e5b9-482d-8066-a009687161bc.png',
+  '/images/2224e403-9848-4b10-bb28-e88d6ee322e3.png',
+  '/images/0390a926-86f7-4ad3-98b2-272d7ad76c9a.png',
+  '/images/7dfe5bad-3d26-4af9-8493-b4f3c851a07a.png',
+  '/images/579bd461-499c-4dca-8fc2-52ffd7e50612.png',
+  '/images/2ed47c65-b6dc-4eb7-a330-98b4b931757a.png',
+  '/images/4f052a9a-216b-45d4-813a-644000eec8cc.png',
+  '/images/8e3c62cd-b8ad-44df-af64-f2cc6a0f3fee.png',
+  '/images/30779d00-8cbc-4ced-bf81-7dd8249c7673.png',
+  '/images/735b7d4f-edca-46f7-bc2f-b3a3e71f33f0.jpg',
+  '/images/e5d8c9a0-ce43-44fc-b3fa-a36cacb5d3ed.png',
+  '/images/17582619-ea38-4aa1-aee4-0ea41adc4356.png',
+  '/images/aa85152c-3882-45e6-9d79-cba90e9adaca.png',
+  '/images/f0e49ca9-baf4-4b1e-8517-a2356bfd454a.png',
+  '/images/aff00f59-fcd1-4b4f-afbd-4b2446d6eabc.png',
+  '/images/f67ff078-008a-461c-9863-7693edc89761.png',
+]
+
+// 26 cards: 16 unique + 10 repeating
+const cards = Array.from({ length: 26 }, (_, i) => ({
+  index: i,
+  image: images[i % 16],
+}))
+
+export default function App() {
+  const scrollOffset = useRef(0)
+  const targetOffset = useRef(0)
+  const rafId = useRef(0)
+  const [offset, setOffset] = useState(0)
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      targetOffset.current += e.deltaY * 0.5
+    }
+
+    const animate = () => {
+      scrollOffset.current += (targetOffset.current - scrollOffset.current) * 0.08
+      setOffset(scrollOffset.current)
+      rafId.current = requestAnimationFrame(animate)
+    }
+
+    window.addEventListener('wheel', onWheel, { passive: false })
+    rafId.current = requestAnimationFrame(animate)
+
+    return () => {
+      window.removeEventListener('wheel', onWheel)
+      cancelAnimationFrame(rafId.current)
+    }
+  }, [])
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-500">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
-        <div className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-sm font-bold">
-              T
-            </div>
-            <span className="text-lg font-semibold tracking-tight">TestBot</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground font-mono">
-              {dark ? "●" : "○"}
-            </span>
-            <Switch checked={dark} onCheckedChange={setDark} />
-          </div>
-        </div>
-      </nav>
+    <div className="fixed inset-0 bg-black touch-none overflow-hidden">
+      {/* Title */}
+      <div className="absolute top-8 left-8 z-10 text-white" style={{ fontWeight: 600, letterSpacing: '-0.02em' }}>
+        <h1 style={{ fontSize: 'clamp(32px, 5vw, 64px)', lineHeight: 1 }}>
+          HERITAGE FW25/26
+        </h1>
+        <p className="mt-2 text-lg tracking-wide">
+          COLLECTION<sup className="text-sm">(16)</sup>
+        </p>
+      </div>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-violet-500/10 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="relative flex flex-col items-center justify-center text-center px-6 pt-24 pb-20 md:pt-36 md:pb-28 max-w-3xl mx-auto">
-          <Badge variant="outline" className="mb-6 px-4 py-1.5 text-xs font-mono tracking-wide border-violet-500/30 text-violet-500">
-            EXPERIMENT.01
-          </Badge>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.9] mb-6">
-            Build
-            <br />
-            <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
-              something
-            </span>
-            <br />
-            cool.
-          </h1>
-          <p className="text-base md:text-lg text-muted-foreground max-w-md mb-10 leading-relaxed">
-            A playground for testing bots, automations, and whatever wild ideas come to mind.
-          </p>
-          <div className="flex gap-3">
-            <Button size="lg" className="rounded-full px-8 bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 border-0 text-white shadow-lg shadow-violet-500/25">
-              Start Building
-            </Button>
-            <Button size="lg" variant="ghost" className="rounded-full px-8">
-              Learn More →
-            </Button>
-          </div>
-        </div>
-      </section>
+      {/* Scroll hint */}
+      <div className="absolute bottom-8 right-8 z-10 text-white text-xs font-mono uppercase tracking-widest opacity-60">
+        scroll to surf
+      </div>
 
-      {/* Stats */}
-      <section className="px-6 pb-20 max-w-5xl mx-auto">
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { value: "∞", label: "Possibilities" },
-            { value: "0", label: "Limits" },
-            { value: "1", label: "You" },
-          ].map((s) => (
-            <div key={s.label} className="text-center py-8 rounded-2xl bg-card/50 border border-border/50">
-              <div className="text-3xl md:text-4xl font-black tracking-tighter bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-transparent">
-                {s.value}
+      {/* 3D Scene */}
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ perspective: '2000px', perspectiveOrigin: '10% 10%' }}
+      >
+        <div style={{ transformStyle: 'preserve-3d', position: 'relative' }}>
+          {cards.map((card, i) => {
+            const scrollScale = offset / 240
+            const pos = i - 13 + scrollScale
+            const x = pos * 240
+            const y = pos * -84
+            const z = pos * -288
+            const dist = Math.abs(pos)
+            const brightness = Math.max(0.15, 1 - dist * 0.08)
+
+            return (
+              <div
+                key={i}
+                className="absolute"
+                style={{
+                  width: 320,
+                  height: 384,
+                  transform: `translate3d(${x}px, ${y}px, ${z}px) rotateY(-50deg)`,
+                  filter: `brightness(${brightness})`,
+                  transformStyle: 'preserve-3d',
+                  left: -160,
+                  top: -192,
+                }}
+              >
+                <span className="text-white text-xs font-mono absolute -top-5 left-0 opacity-60">
+                  {String(i).padStart(2, '0')}
+                </span>
+                <img
+                  src={card.image}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  draggable={false}
+                />
               </div>
-              <div className="text-xs text-muted-foreground mt-1 font-mono uppercase tracking-widest">
-                {s.label}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
-      </section>
-
-      {/* Features */}
-      <section className="px-6 pb-24 max-w-5xl mx-auto">
-        <div className="text-center mb-14">
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
-            Batteries Included
-          </h2>
-          <p className="text-sm text-muted-foreground">Modern stack, zero compromise.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            {
-              icon: "⚡",
-              title: "Vite + React",
-              desc: "Instant HMR, blazing builds. Because waiting is for chumps.",
-              color: "from-amber-500/20 to-orange-500/20",
-            },
-            {
-              icon: "🎨",
-              title: "shadcn/ui",
-              desc: "Copy-paste components that actually look good. Revolutionary.",
-              color: "from-violet-500/20 to-purple-500/20",
-            },
-            {
-              icon: "🌊",
-              title: "Tailwind CSS v4",
-              desc: "Utility-first CSS that doesn't make you want to cry.",
-              color: "from-cyan-500/20 to-blue-500/20",
-            },
-            {
-              icon: "🔒",
-              title: "TypeScript",
-              desc: "Strict mode on. Because 'undefined is not a function' gets old.",
-              color: "from-emerald-500/20 to-green-500/20",
-            },
-          ].map((f) => (
-            <Card
-              key={f.title}
-              className="group relative overflow-hidden border-border/50 hover:border-border transition-all duration-300 bg-card/50"
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${f.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-              <CardContent className="relative p-6">
-                <div className="text-3xl mb-4">{f.icon}</div>
-                <h3 className="font-semibold text-lg mb-2">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {f.desc}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="px-6 pb-24 max-w-5xl mx-auto">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-500 to-fuchsia-500 p-12 md:p-16 text-center text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.15),transparent)] pointer-events-none" />
-          <h2 className="relative text-3xl md:text-4xl font-black tracking-tight mb-4">
-            Ready to experiment?
-          </h2>
-          <p className="relative text-white/70 mb-8 max-w-md mx-auto">
-            This is your sandbox. Break things, build things, learn things.
-          </p>
-          <Button size="lg" variant="secondary" className="relative rounded-full px-8 font-semibold">
-            Let's Go 🚀
-          </Button>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border/50 py-8 px-6">
-        <div className="max-w-5xl mx-auto flex items-center justify-between text-xs text-muted-foreground">
-          <span>Built with 💜 by 小美</span>
-          <span className="font-mono">2026</span>
-        </div>
-      </footer>
+      </div>
     </div>
-  );
+  )
 }
-
-export default App;
