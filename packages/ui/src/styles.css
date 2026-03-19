@@ -222,45 +222,6 @@
   gap: 0.8rem;
 }
 
-.ui-card-header,
-.ui-card-content,
-.ui-card-footer {
-  padding-inline: 1rem;
-}
-
-.ui-card-header {
-  display: grid;
-  gap: 0.45rem;
-  padding-top: 1rem;
-}
-
-.ui-card-title {
-  font-size: 1.05rem;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.ui-card-description {
-  font-size: 0.82rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.62);
-}
-
-.ui-card-action {
-  align-self: flex-start;
-  justify-self: end;
-}
-
-.ui-card-content {
-  padding-bottom: 1rem;
-}
-
-.ui-card-footer {
-  display: flex;
-  align-items: center;
-  padding-bottom: 1rem;
-}
-
 .ui-switch {
   position: relative;
   display: inline-flex;
@@ -322,4 +283,353 @@
 .ui-switch--sm.is-checked .ui-switch__thumb {
   transform: translateX(18px);
   background: #0f1012;
+}
+
+.ripplable {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.1), transparent 24%),
+    linear-gradient(180deg, rgba(4, 4, 5, 0.9), rgba(1, 1, 2, 1));
+  touch-action: none;
+  user-select: none;
+}
+
+.ripplable__fps {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 50;
+  pointer-events: none;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-family:
+    'SFMono-Regular',
+    ui-monospace,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  white-space: pre;
+}
+
+.ripplable__overlay-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.ripplable__scene-root,
+.ripplable__scene-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ripplable__scene-lane {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.ripplable__card {
+  --ripplable-shade-opacity: 0;
+  position: absolute;
+  width: 320px;
+  height: 384px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  transform: translateZ(0);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+  contain: layout paint style;
+  transition: opacity 180ms ease;
+}
+
+.ripplable__card-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 28px;
+  background: #000000;
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.ripplable__card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.ripplable__card-shade {
+  position: absolute;
+  inset: 0;
+  background: #000000;
+  opacity: var(--ripplable-shade-opacity, 0);
+  pointer-events: none;
+}
+
+.ripplable__card-label {
+  position: absolute;
+  top: -24px;
+  left: 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.ripplable-config-panel__toggle-wrap {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 50;
+  pointer-events: auto;
+}
+
+.ripplable-config-panel__toggle {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.ripplable-config-panel__toggle-glyph {
+  position: relative;
+  display: inline-block;
+  width: 13px;
+  height: 11px;
+  background: linear-gradient(currentColor 0 0) left center / 100% 1.5px no-repeat;
+}
+
+.ripplable-config-panel__toggle-glyph::before,
+.ripplable-config-panel__toggle-glyph::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: currentColor;
+}
+
+.ripplable-config-panel__toggle-glyph::before {
+  top: 0;
+}
+
+.ripplable-config-panel__toggle-glyph::after {
+  bottom: 0;
+}
+
+.ripplable-config-panel {
+  position: absolute;
+  top: 4rem;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 50;
+  width: min(360px, calc(100vw - 2rem));
+  pointer-events: auto;
+  transform: translateX(calc(100% + 1rem));
+  transition: transform 280ms ease;
+}
+
+.ripplable-config-panel.is-open {
+  transform: translateX(0);
+}
+
+.ripplable-config-panel__surface {
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.72);
+  color: #ffffff;
+  backdrop-filter: blur(22px);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.32);
+}
+
+.ripplable-config-panel__header {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ripplable-config-panel__header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ripplable-config-panel__heading {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.ripplable-config-panel__chip {
+  align-self: flex-start;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.ripplable-config-panel__title {
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.ripplable-config-panel__description {
+  margin-top: 0.2rem;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.ripplable-config-panel__reset {
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+.ripplable-config-panel__reset-symbol {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.ripplable-config-panel__fps-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ripplable-config-panel__autoplay-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ripplable-config-panel__autoplay-speed {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0 0.1rem 1rem;
+}
+
+.ripplable-config-panel__autoplay-speed.is-disabled {
+  opacity: 0.52;
+}
+
+.ripplable-config-panel__fps-label {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.ripplable-config-panel__fps-copy {
+  margin-top: 0.2rem;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.ripplable-config-panel__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+.ripplable-config-panel__sections {
+  display: grid;
+  gap: 1rem;
+}
+
+.ripplable-config-panel__section {
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ripplable-config-panel__section-header {
+  margin-bottom: 1rem;
+}
+
+.ripplable-config-panel__section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.ripplable-config-panel__section-description {
+  margin: 0.35rem 0 0;
+  color: rgba(255, 255, 255, 0.54);
+  font-size: 0.76rem;
+  line-height: 1.55;
+}
+
+.ripplable-config-panel__section-body {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.ripplable-config-panel__control-row {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.ripplable-config-panel__control-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ripplable-config-panel__control-label {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.ripplable-config-panel__control-value {
+  min-width: 3.4rem;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ripplable-config-panel__control-slider {
+  width: 100%;
+  accent-color: #f8fafc;
+}
+
+.ripplable-config-panel__control-slider:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }

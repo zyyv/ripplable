@@ -2,15 +2,15 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "jsx": "react-jsx",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "useDefineForClassFields": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@ripplable/ui": ["../packages/ui/src/index.ts"]
+      "@ripplable/ui": ["../packages/ui/src/index.ts"],
+      "@ripplable/ui/*": ["../packages/ui/src/*"]
     },
-    "types": ["vite/client", "react", "react-dom"]
+    "types": ["vite/client"]
   },
-  "include": ["src"]
+  "include": ["src/**/*.ts", "src/**/*.vue"]
 }

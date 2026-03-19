@@ -1,12 +1,12 @@
 # ripplable
 
-`ripplable` is a `pnpm` workspace monorepo with a root-level `playground` app and a reusable `@ripplable/ui` package.
+`ripplable` is a `pnpm` workspace monorepo with a root-level Vue playground app and a reusable `@ripplable/ui` package.
 
 ## Structure
 
 ```text
 .
-├─ playground/    # Vite playground app
+├─ playground/    # Vue + Vite playground app
 ├─ packages/
 │  └─ ui/         # shared UI package
 ├─ eslint.config.js
@@ -20,6 +20,7 @@
 - Workspace packages: `playground`, `packages/*`
 - Shared dependency versions: `pnpm-workspace.yaml` via `catalog:`
 - Lint config: `@antfu/eslint-config`
+- Runtime: Vue 3
 - Styling: hand-written CSS, no Tailwind or UI primitive library
 
 ## Scripts
