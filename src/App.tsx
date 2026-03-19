@@ -1,4 +1,11 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
+
+import { RotateCcw, SlidersHorizontal } from 'lucide-react'
+
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Switch } from '@/components/ui/switch'
 
 const imageSources = [
   '/images/11d2f7cd-e5b9-482d-8066-a009687161bc.png',
@@ -26,19 +33,144 @@ const VISIBLE_COUNT = 36
 const CENTER = Math.floor(VISIBLE_COUNT / 2)
 const CARD_WIDTH = 320
 const CARD_HEIGHT = 384
-const BASE_SCROLL_FOLLOW = 0.085
-const MAX_SCROLL_FOLLOW = 0.28
-const INPUT_VELOCITY_GAIN = 0.18
-const INPUT_VELOCITY_DECAY = 0.82
-const WAVE_SCROLL_GAIN = 4.8
-const MAX_WAVE_AMPLITUDE = 180
-const WAVE_FREQUENCY = 1.05
-const WAVE_TILT_X_GAIN = 0.04
-const SPACING_X = 240
-const SPACING_Y = -84
-const SPACING_Z = -288
+
+type MotionConfig = {
+  wheelInputScale: number
+  touchInputScale: number
+  baseScrollFollow: number
+  maxScrollFollow: number
+  followVelocityInfluence: number
+  inputVelocityGain: number
+  inputVelocityDecay: number
+  waveScrollGain: number
+  maxWaveAmplitude: number
+  waveFrequency: number
+  waveResponseBase: number
+  waveResponseGain: number
+  maxWaveResponse: number
+  waveTiltXGain: number
+  maxWaveTiltX: number
+  spacingX: number
+  spacingY: number
+  spacingZ: number
+}
+
+type MotionControlDefinition = {
+  key: keyof MotionConfig
+  label: string
+  min: number
+  max: number
+  step: number
+}
+
+const defaultMotionConfig: MotionConfig = {
+  wheelInputScale: 0.5,
+  touchInputScale: 0.75,
+  baseScrollFollow: 0.085,
+  maxScrollFollow: 0.28,
+  followVelocityInfluence: 0.004,
+  inputVelocityGain: 0.18,
+  inputVelocityDecay: 0.82,
+  waveScrollGain: 4.8,
+  maxWaveAmplitude: 180,
+  waveFrequency: 1.05,
+  waveResponseBase: 0.06,
+  waveResponseGain: 0.008,
+  maxWaveResponse: 0.2,
+  waveTiltXGain: 0.04,
+  maxWaveTiltX: 12,
+  spacingX: 240,
+  spacingY: -84,
+  spacingZ: -288,
+}
+
+const motionControlSections: Array<{
+  title: string
+  description: string
+  controls: MotionControlDefinition[]
+}> = [
+  {
+    title: 'Input',
+    description: 'How aggressively wheel and touch drive the strip.',
+    controls: [
+      { key: 'wheelInputScale', label: 'Wheel Scale', min: 0.1, max: 1.2, step: 0.01 },
+      { key: 'touchInputScale', label: 'Touch Scale', min: 0.1, max: 1.6, step: 0.01 },
+      { key: 'inputVelocityGain', label: 'Input Gain', min: 0.02, max: 0.6, step: 0.01 },
+      { key: 'inputVelocityDecay', label: 'Input Decay', min: 0.5, max: 0.98, step: 0.01 },
+    ],
+  },
+  {
+    title: 'Follow',
+    description: 'How fast the rendered strip catches the target scroll.',
+    controls: [
+      { key: 'baseScrollFollow', label: 'Base Follow', min: 0.02, max: 0.3, step: 0.005 },
+      { key: 'maxScrollFollow', label: 'Max Follow', min: 0.08, max: 0.6, step: 0.01 },
+      { key: 'followVelocityInfluence', label: 'Velocity Influence', min: 0.001, max: 0.02, step: 0.001 },
+    ],
+  },
+  {
+    title: 'Wave',
+    description: 'Speed controls how strong and how fast the wave reacts.',
+    controls: [
+      { key: 'waveScrollGain', label: 'Wave Gain', min: 0.5, max: 12, step: 0.1 },
+      { key: 'maxWaveAmplitude', label: 'Wave Max', min: 20, max: 320, step: 1 },
+      { key: 'waveFrequency', label: 'Wave Frequency', min: 0.2, max: 2.4, step: 0.01 },
+      { key: 'waveResponseBase', label: 'Response Base', min: 0.01, max: 0.18, step: 0.005 },
+      { key: 'waveResponseGain', label: 'Response Gain', min: 0.001, max: 0.03, step: 0.001 },
+      { key: 'maxWaveResponse', label: 'Response Max', min: 0.05, max: 0.45, step: 0.01 },
+      { key: 'waveTiltXGain', label: 'Tilt Gain', min: 0, max: 0.12, step: 0.002 },
+      { key: 'maxWaveTiltX', label: 'Tilt Max', min: 0, max: 24, step: 0.5 },
+    ],
+  },
+  {
+    title: 'Path',
+    description: 'Layout spacing for the infinite card lane.',
+    controls: [
+      { key: 'spacingX', label: 'Spacing X', min: 120, max: 380, step: 1 },
+      { key: 'spacingY', label: 'Spacing Y', min: -180, max: 40, step: 1 },
+      { key: 'spacingZ', label: 'Spacing Z', min: -420, max: -80, step: 1 },
+    ],
+  },
+]
 
 const mod = (n: number, m: number) => ((n % m) + m) % m
+
+const formatControlValue = (value: number, step: number) => {
+  if (Math.abs(value) >= 100 || step >= 1) return value.toFixed(0)
+  if (step >= 0.1) return value.toFixed(1)
+  if (step >= 0.01) return value.toFixed(2)
+  return value.toFixed(3)
+}
+
+function MotionControlRow({
+  control,
+  value,
+  onChange,
+}: {
+  control: MotionControlDefinition
+  value: number
+  onChange: (key: keyof MotionConfig, value: number) => void
+}) {
+  return (
+    <label className="block space-y-2">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[11px] font-medium tracking-[0.18em] text-white/72 uppercase">{control.label}</span>
+        <Badge variant="outline" className="border-white/12 bg-white/6 text-[11px] text-white/88">
+          {formatControlValue(value, control.step)}
+        </Badge>
+      </div>
+      <input
+        type="range"
+        min={control.min}
+        max={control.max}
+        step={control.step}
+        value={value}
+        onChange={(event) => onChange(control.key, Number(event.target.value))}
+        className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/14 accent-white"
+      />
+    </label>
+  )
+}
 
 const visibleSlots = Array.from({ length: VISIBLE_COUNT }, (_, slotIndex) => {
   const initialImageIndex = mod(slotIndex, TOTAL)
@@ -56,8 +188,10 @@ export default function App() {
   const labelsRef = useRef<HTMLSpanElement[]>([])
   const imagesRef = useRef<HTMLImageElement[]>([])
   const shadeLayersRef = useRef<HTMLDivElement[]>([])
+  const controlsPanelRef = useRef<HTMLDivElement | null>(null)
   const fpsRef = useRef<HTMLDivElement | null>(null)
   const decodedImageCache = useRef<Map<string, Promise<void>>>(new Map())
+  const motionConfigRef = useRef(defaultMotionConfig)
   const fpsStatsRef = useRef({
     lastSampleTime: 0,
     framesSinceSample: 0,
@@ -74,6 +208,10 @@ export default function App() {
       shadeOpacity: -1,
     }))
   )
+
+  const [motionConfig, setMotionConfig] = useState(defaultMotionConfig)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [showFps, setShowFps] = useState(true)
 
   const scrollTarget = useRef(0)
   const scrollCurrent = useRef(0)
@@ -131,9 +269,27 @@ export default function App() {
     if (el) shadeLayersRef.current[i] = el
   }, [])
 
-  const registerScrollInput = useCallback((delta: number) => {
-    scrollTarget.current += delta * 0.5
-    inputVelocity.current = inputVelocity.current * 0.45 + delta * INPUT_VELOCITY_GAIN
+  useEffect(() => {
+    motionConfigRef.current = motionConfig
+  }, [motionConfig])
+
+  const updateMotionConfig = useCallback((key: keyof MotionConfig, value: number) => {
+    setMotionConfig((current) => ({
+      ...current,
+      [key]: value,
+    }))
+  }, [])
+
+  const resetMotionConfig = useCallback(() => {
+    setMotionConfig(defaultMotionConfig)
+  }, [])
+
+  const registerScrollInput = useCallback((delta: number, inputType: 'wheel' | 'touch') => {
+    const config = motionConfigRef.current
+    const inputScale = inputType === 'touch' ? config.touchInputScale : config.wheelInputScale
+
+    scrollTarget.current += delta * inputScale
+    inputVelocity.current = inputVelocity.current * 0.45 + delta * config.inputVelocityGain
   }, [])
 
   useEffect(() => {
@@ -141,32 +297,39 @@ export default function App() {
       void ensureImageDecoded(src)
     }
 
-    if (fpsRef.current) {
+    if (showFps && fpsRef.current) {
       fpsRef.current.textContent = 'FPS --\nFRAME -- ms\nDROP --'
     }
 
+    const isInsideSidebar = (target: EventTarget | null) =>
+      target instanceof Node && Boolean(controlsPanelRef.current?.contains(target))
+
     const onWheel = (e: WheelEvent) => {
+      if (isInsideSidebar(e.target)) return
       e.preventDefault()
-      registerScrollInput(e.deltaY)
+      registerScrollInput(e.deltaY, 'wheel')
     }
 
     let touchY = 0
     const onTouchStart = (e: TouchEvent) => {
+      if (isInsideSidebar(e.target)) return
       touchY = e.touches[0].clientY
     }
 
     const onTouchMove = (e: TouchEvent) => {
+      if (isInsideSidebar(e.target)) return
       e.preventDefault()
       const dy = touchY - e.touches[0].clientY
       touchY = e.touches[0].clientY
-      registerScrollInput(dy * 1.5)
+      registerScrollInput(dy, 'touch')
     }
 
     const animate = (time: number) => {
+      const config = motionConfigRef.current
       const frameDelta = timeRef.current ? time - timeRef.current : 16.667
       const dt = frameDelta / 16.667
       timeRef.current = time
-      inputVelocity.current *= Math.pow(INPUT_VELOCITY_DECAY, dt)
+      inputVelocity.current *= Math.pow(config.inputVelocityDecay, dt)
 
       const fpsStats = fpsStatsRef.current
       if (!fpsStats.lastSampleTime) {
@@ -183,7 +346,7 @@ export default function App() {
         const avgFrame = fpsStats.frameTimeTotal / fpsStats.framesSinceSample
         const fpsColor = fps >= 55 ? '#dcfce7' : fps >= 45 ? '#fde68a' : '#fecaca'
 
-        if (fpsRef.current) {
+        if (showFps && fpsRef.current) {
           fpsRef.current.textContent = `FPS ${fps.toFixed(0)}\nFRAME ${avgFrame.toFixed(1)} ms\nDROP ${fpsStats.droppedFramesSinceSample}`
           fpsRef.current.style.color = fpsColor
         }
@@ -195,16 +358,19 @@ export default function App() {
       }
 
       const prev = scrollCurrent.current
-      const followStrength = Math.min(MAX_SCROLL_FOLLOW, BASE_SCROLL_FOLLOW + Math.abs(inputVelocity.current) * 0.004)
+      const followStrength = Math.min(
+        config.maxScrollFollow,
+        config.baseScrollFollow + Math.abs(inputVelocity.current) * config.followVelocityInfluence
+      )
       scrollCurrent.current += (scrollTarget.current - scrollCurrent.current) * followStrength * Math.min(dt, 3)
       velocity.current = (scrollCurrent.current - prev) / Math.max(dt, 0.5)
 
       const speed = Math.abs(velocity.current)
-      const targetWave = Math.min(MAX_WAVE_AMPLITUDE, speed * WAVE_SCROLL_GAIN)
-      const waveResponse = Math.min(0.2, 0.06 + speed * 0.008)
+      const targetWave = Math.min(config.maxWaveAmplitude, speed * config.waveScrollGain)
+      const waveResponse = Math.min(config.maxWaveResponse, config.waveResponseBase + speed * config.waveResponseGain)
       waveAmplitude.current += (targetWave - waveAmplitude.current) * waveResponse
 
-      const scrollPos = scrollCurrent.current / SPACING_X
+      const scrollPos = scrollCurrent.current / config.spacingX
       const baseIndex = Math.floor(scrollPos)
       const wave = waveAmplitude.current
 
@@ -217,15 +383,15 @@ export default function App() {
         const logicalIndex = baseIndex + i - CENTER
         const pos = logicalIndex - scrollPos
 
-        const x = pos * SPACING_X
-        const y = pos * SPACING_Y
-        const z = pos * SPACING_Z
+        const x = pos * config.spacingX
+        const y = pos * config.spacingY
+        const z = pos * config.spacingZ
         const centeredX = x - CARD_WIDTH / 2
         const centeredY = y - CARD_HEIGHT / 2
 
-        const waveShape = Math.sin(pos * WAVE_FREQUENCY)
+        const waveShape = Math.sin(pos * config.waveFrequency)
         const waveOffset = waveShape * wave
-        const tiltX = waveShape * Math.min(12, wave * WAVE_TILT_X_GAIN)
+        const tiltX = waveShape * Math.min(config.maxWaveTiltX, wave * config.waveTiltXGain)
         const dist = Math.abs(pos)
         const isHidden = dist > CENTER - 1
         const opacity = isHidden ? 0 : 1
@@ -291,21 +457,101 @@ export default function App() {
       window.removeEventListener('touchmove', onTouchMove)
       cancelAnimationFrame(rafId.current)
     }
-  }, [ensureImageDecoded, registerScrollInput])
+  }, [ensureImageDecoded, registerScrollInput, showFps])
 
   return (
     <div className="fixed inset-0 bg-black touch-none overflow-hidden select-none">
+      {showFps && (
+        <div
+          ref={fpsRef}
+          className="absolute left-4 top-4 z-50 pointer-events-none font-mono text-[11px] leading-4 text-white"
+          style={{
+            whiteSpace: 'pre',
+            padding: '10px 12px',
+            border: '1px solid rgba(255,255,255,0.14)',
+            background: 'rgba(0,0,0,0.55)',
+            letterSpacing: '0.04em',
+          }}
+        >
+          FPS --
+          {'\n'}
+          FRAME -- ms
+          {'\n'}
+          DROP --
+        </div>
+      )}
+
+      <div className="absolute right-4 top-4 z-50 touch-auto pointer-events-auto">
+        <Button variant="outline" size="sm" onClick={() => setIsSidebarOpen((open) => !open)} className="border-white/12 bg-black/50 text-white hover:bg-white/10">
+          <SlidersHorizontal />
+          {isSidebarOpen ? 'Hide Controls' : 'Show Controls'}
+        </Button>
+      </div>
+
       <div
-        ref={fpsRef}
-        className="absolute left-4 top-4 z-50 pointer-events-none font-mono text-[11px] leading-4 text-white"
-        style={{
-          whiteSpace: 'pre',
-          padding: '10px 12px',
-          border: '1px solid rgba(255,255,255,0.14)',
-          background: 'rgba(0,0,0,0.55)',
-          letterSpacing: '0.04em',
-        }}
-      />
+        ref={controlsPanelRef}
+        data-motion-sidebar
+        className={`absolute right-4 top-16 bottom-4 z-50 w-[min(360px,calc(100vw-2rem))] touch-auto pointer-events-auto transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : 'translate-x-[calc(100%+1rem)]'}`}
+        style={{ touchAction: 'auto' }}
+      >
+        <Card className="flex h-full flex-col gap-0 overflow-hidden border border-white/10 bg-black/72 text-white ring-0 backdrop-blur-xl">
+          <CardHeader className="gap-3 border-b border-white/10 px-4 py-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <Badge variant="outline" className="border-white/12 bg-white/6 text-white/80">
+                  Motion Config
+                </Badge>
+                <div>
+                  <CardTitle className="text-white">Sidebar Controls</CardTitle>
+                  <CardDescription className="text-white/58">
+                    Tune scroll follow, wave behavior, and lane spacing live.
+                  </CardDescription>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                onClick={resetMotionConfig}
+                className="border-white/12 bg-white/6 text-white hover:bg-white/12"
+                aria-label="Reset motion settings"
+              >
+                <RotateCcw />
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/6 px-3 py-2">
+              <div>
+                <div className="text-[11px] font-medium tracking-[0.18em] text-white/72 uppercase">FPS Monitor</div>
+                <div className="text-xs text-white/52">Toggle the live frame counter overlay.</div>
+              </div>
+              <Switch checked={showFps} onCheckedChange={setShowFps} />
+            </div>
+          </CardHeader>
+
+          <CardContent className="flex-1 overflow-y-auto px-4 py-4">
+            <div className="space-y-4">
+              {motionControlSections.map((section) => (
+                <div key={section.title} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <div className="mb-4">
+                    <div className="text-[11px] font-medium tracking-[0.2em] text-white/74 uppercase">{section.title}</div>
+                    <p className="mt-1 text-xs leading-5 text-white/48">{section.description}</p>
+                  </div>
+                  <div className="space-y-4">
+                    {section.controls.map((control) => (
+                      <MotionControlRow
+                        key={control.key}
+                        control={control}
+                        value={motionConfig[control.key]}
+                        onChange={updateMotionConfig}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="absolute inset-0 flex items-center justify-center" style={{ perspective: 2000, perspectiveOrigin: '10% 10%' }}>
         <div className="relative" style={{ transformStyle: 'preserve-3d', transform: 'translateY(100px)' }}>
