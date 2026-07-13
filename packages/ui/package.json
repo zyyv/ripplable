@@ -35,8 +35,7 @@
   ],
   "scripts": {
     "dev": "vite build --watch",
-    "build": "pnpm run clean && vue-tsc -p tsconfig.json && vite build",
-    "clean": "rm -rf dist",
+    "build": "vite build",
     "typecheck": "vue-tsc -p tsconfig.json --noEmit",
     "prepack": "pnpm run build"
   },
@@ -50,6 +49,7 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:",
     "typescript": "catalog:",
+    "unplugin-dts": "catalog:",
     "vite": "catalog:",
     "vue": "catalog:",
     "vue-tsc": "catalog:"

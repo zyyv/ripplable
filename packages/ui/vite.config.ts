@@ -1,11 +1,15 @@
 import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
+import dts from 'unplugin-dts/vite'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    dts({ tsconfigPath: './tsconfig.json' }),
+  ],
   build: {
-    emptyOutDir: false,
+    emptyOutDir: true,
     lib: {
       entry: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
       formats: ['es'],
