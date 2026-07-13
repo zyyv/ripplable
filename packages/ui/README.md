@@ -1,372 +1,243 @@
 # Ripplable
 
-> 双语说明：中文版在前，英文版在后。
+An infinite, flowing 3D card lane component for Vue 3. It uses `requestAnimationFrame` to drive animations and supports wheel input, touch dragging, autoplay, custom cards, and runtime motion configuration overrides.
 
-## 中文说明
+## Features
 
-`Ripplable` 是一个基于 Vue 3 的可滚动卡片流组件，适合展示一组图片、视觉素材或产品卡片，并通过滚轮、触摸拖拽以及自动播放的方式，让卡片沿着三维空间的“lane”缓慢流动。组件内部会对输入速度、跟随强度、波浪形态和层级间距做统一控制，适合做图像展示、作品集、产品展示、创意海报类界面。
+- Reuses a fixed number of card slots for infinite looping, preventing the DOM from growing as you scroll
+- Supports mouse wheel and touch drag input
+- Supports forward and reverse autoplay, with speed limited to `0.5`–`24`
+- Dynamically calculates follow strength, wave amplitude, and card tilt based on scroll velocity
+- Decodes images before switching to reduce flicker during fast scrolling
+- Accepts image URL strings or custom object data
+- Provides a `card` slot for fully custom card content
+- Offers an optional overlay with FPS, average frame time, and dropped-frame estimates
+- Includes complete TypeScript type exports
 
-### 安装
+## Installation
 
 ```bash
 pnpm add ripplable
+# npm install ripplable
+# yarn add ripplable
 ```
 
-项目需要使用 Vue 3，并在应用入口或使用组件的样式文件中引入 Ripplable 样式：
-
-```ts
-import 'ripplable/styles.css'
-```
-
-### 组件功能
-
-`Ripplable` 的核心能力包括：
-
-- 以一组图片或数据项构成无限循环的横向/纵向卡片通道
-- 支持鼠标滚轮和触摸拖拽输入
-- 支持自动播放（可设置速度，支持负速反向播放）
-- 支持查看当前 FPS 和帧率统计信息
-- 支持通过 `config` 调整滚动跟随、波浪幅度、空间间距与倾斜强度
-- 支持通过 `card` 插槽自定义每个卡片的内容结构
-
-### 使用案例：作品集画廊
-
-下面的示例使用对象数组提供图片和标题，通过 `card` 插槽创建一组可自动播放、可滚轮或触摸操作的作品卡片。
+## Quick Start
 
 ```vue
 <script setup lang="ts">
-import {
-  Ripplable,
-  type RipplableListItem,
-} from 'ripplable'
+import { Ripplable, type RipplableListItem } from 'ripplable'
 import 'ripplable/styles.css'
 
-const projects: RipplableListItem[] = [
-  { id: 'aurora', src: '/images/aurora.jpg', alt: 'Aurora identity', title: 'Aurora' },
-  { id: 'terrain', src: '/images/terrain.jpg', alt: 'Terrain campaign', title: 'Terrain' },
-  { id: 'mono', src: '/images/mono.jpg', alt: 'Mono editorial', title: 'Mono' },
+const images: RipplableListItem[] = [
+  { id: 'aurora', src: '/images/aurora.jpg', alt: 'Aurora' },
+  { id: 'terrain', src: '/images/terrain.jpg', alt: 'Terrain' },
+  { id: 'mono', src: '/images/mono.jpg', alt: 'Mono' },
 ]
 </script>
 
 <template>
-  <main class="portfolio-gallery">
-    <Ripplable :autoplay="5" :list="projects" :visible-count="24">
-      <template #card="{ alt, item, label, src }">
-        <article class="project-card">
-          <img :alt="alt" :src="src" class="project-card__image">
-          <div class="project-card__meta">
-            <span class="project-card__index">{{ label }}</span>
-            <strong class="project-card__title">
-              {{ typeof item === 'string' ? label : item?.title }}
-            </strong>
-          </div>
-        </article>
-      </template>
-    </Ripplable>
-  </main>
+  <div class="gallery">
+    <Ripplable :list="images" :autoplay="6" />
+  </div>
 </template>
 
 <style scoped>
-.portfolio-gallery {
+.gallery {
+  width: 100%;
   height: 100vh;
   overflow: hidden;
-  background: #050505;
-}
-
-.project-card {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  border-radius: 28px;
-  background: #111111;
-}
-
-.project-card__image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.project-card__meta {
-  position: absolute;
-  right: 1rem;
-  bottom: 1rem;
-  left: 1rem;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
-  color: #ffffff;
-}
-
-.project-card__index {
-  font-size: 0.75rem;
-  opacity: 0.7;
-}
-
-.project-card__title {
-  font-size: 1.25rem;
-  line-height: 1;
 }
 </style>
 ```
 
-将 `autoplay` 设置为 `true` 会使用默认速度；传入数字可以指定速度，负数表示反向播放。不需要自定义卡片时，可以省略 `card` 插槽，组件会直接渲染图片。
+`Ripplable` fills its parent container, so the parent must have a computable width and height.
 
-### `list` 数据项说明
+## Custom Cards
 
-`list` 接受一个数组，元素可以是：
-
-1. 字符串：直接作为图片地址
-2. 对象：形如：
-
-```ts
-interface RipplableItem {
-  id?: string | number
-  src: string
-  alt?: string
-  [key: string]: unknown
-}
-```
-
-组件内部会自动把每个数据项规范化为标准化结构，生成 `src`、`alt`、`id` 和 `key` 等信息。
-
-### Props 说明
-
-#### `list`
-
-- 类型：`RipplableListItem[]`
-- 必填：是
-- 说明：组件要渲染的图片/卡片数据源。
-
-#### `fps`
-
-- 类型：`boolean`
-- 默认值：`false`
-- 说明：是否启用 FPS 监视器覆盖层。
-
-#### `autoplay`
-
-- 类型：`boolean | number`
-- 默认值：`false`
-- 说明：是否自动滚动。传入 `true` 表示开启，传入数字表示开启并指定速度；数值可以为负数，表示反向播放。
-
-#### `config`
-
-- 类型：`Partial<RipplableConfig>`
-- 默认值：`{}`
-- 说明：用于覆盖组件内部默认的节奏与布局参数。配置项通常来自 `defaultRipplableConfig`。
-
-#### `visibleCount`
-
-- 类型：`number`
-- 默认值：`36`
-- 说明：当前场景中同时渲染的卡片数量。数值越大，视觉层级越丰富，但也会带来更多渲染成本。
-
-#### `perspective`
-
-- 类型：`string`
-- 默认值：`'2000px'`
-- 说明：三维场景的透视距离。
-
-#### `perspectiveOrigin`
-
-- 类型：`string`
-- 默认值：`'10% 10%'`
-- 说明：透视中心点位置。
-
-#### `laneTransform`
-
-- 类型：`string`
-- 默认值：`'translateY(100px)'`
-- 说明：用于调节整个 lane 在场景中的平移位置，常用于做视觉微调。
-
-### `config` 内部可调参数
-
-`config` 中的参数会直接影响组件的滚动跟随、波浪效果、位置间距与视角表现。常见字段如下：
-
-- `wheelInputScale`：滚轮输入灵敏度
-- `touchInputScale`：触摸输入灵敏度
-- `baseScrollFollow`：基础跟随强度
-- `maxScrollFollow`：最大跟随强度
-- `followVelocityInfluence`：速度对跟随强度的影响
-- `inputVelocityGain`：输入速度增益
-- `inputVelocityDecay`：输入速度衰减
-- `waveScrollGain`：波浪随滚动速度放大的幅度
-- `maxWaveAmplitude`：波浪最大振幅
-- `waveFrequency`：波浪频率
-- `waveResponseBase`：波浪基准响应值
-- `waveResponseGain`：波浪响应增益
-- `maxWaveResponse`：波浪最大响应值
-- `waveTiltXGain`：横向倾斜增益
-- `maxWaveTiltX`：横向倾斜最大值
-- `spacingX`：卡片沿 X 轴间距
-- `spacingY`：卡片沿 Y 轴位置偏移
-- `spacingZ`：卡片沿 Z 轴层级深度
-
-### 插槽说明
-
-#### 默认插槽
-
-默认插槽会被渲染到卡片层的上方，一般用于放置额外的交互元素、覆盖信息、标题、说明文案等。
-
-#### `card` 插槽
-
-通过 `card` 插槽可以自定义每张卡片的视觉内容。插槽参数包括：
-
-- `item`: 原始数据项
-- `resolvedItem`: 归一化后的数据项
-- `src`: 图片地址
-- `alt`: 图片替代文案
-- `label`: 当前卡片标签
-- `index`: 当前数据索引
-- `slotIndex`: 当前渲染槽位编号
-
----
-
-## English Description
-
-`Ripplable` is a Vue 3 component for rendering a flowing card lane composed of images or media items. It is designed for immersive visual showcases such as image galleries, portfolios, creative landing pages, and product highlight sections.
-
-### Installation
-
-```bash
-pnpm add ripplable
-```
-
-Import the component stylesheet once in your application entry:
-
-```ts
-import 'ripplable/styles.css'
-```
-
-### What the component does
-
-`Ripplable` provides:
-
-- an infinite looping lane of cards built from a `list` source
-- wheel and touch-driven motion input
-- autoplay support with configurable speed
-- an optional FPS overlay
-- runtime tuning for motion follow, wave response, and spatial layout
-- a `card` slot for fully custom card markup
-
-### Basic usage
+Object data is exposed unchanged through the slot's `item` property, so you can attach any application-specific fields:
 
 ```vue
 <script setup lang="ts">
-import {
-  Ripplable,
-  defaultRipplableConfig,
-} from 'ripplable'
+import { Ripplable } from 'ripplable'
 import 'ripplable/styles.css'
 
-const images = ['/images/1.png', '/images/2.png', '/images/3.png']
-const config = { ...defaultRipplableConfig }
+const projects = [
+  { id: 1, src: '/images/one.jpg', alt: 'Project One', title: 'Project One' },
+  { id: 2, src: '/images/two.jpg', alt: 'Project Two', title: 'Project Two' },
+]
 </script>
 
 <template>
-  <Ripplable :list="images" :autoplay="true" :fps="true" :config="config">
-    <template #card="{ src, label, index }">
-      <div class="demo-card">
-        <img :src="src" :alt="`Visual ${index + 1}`" class="demo-card__image">
-        <div class="demo-card__meta">
-          <span>{{ label }}</span>
-        </div>
-      </div>
+  <Ripplable :list="projects" :autoplay="-4" :visible-count="24">
+    <template #card="{ item, src, alt, label }">
+      <article class="project-card">
+        <img :src="src" :alt="alt">
+        <span>{{ label }}</span>
+        <strong>{{ typeof item === 'string' ? label : item?.title }}</strong>
+      </article>
     </template>
   </Ripplable>
 </template>
 ```
 
+When you use the custom `card` slot, the component no longer adds its default card container, shadow, or label. The consumer is responsible for sizing, image cropping, and visual styling.
+
+## API
+
+### `list`
+
+```ts
+export type RipplableListItem
+  = | string
+    | {
+      id?: string | number
+      src: string
+      alt?: string
+      [key: string]: unknown
+    }
+```
+
+Strings are used directly as image URLs. Objects remain available as `item` in the slot and are normalized to:
+
+```ts
+export interface ResolvedRipplableItem<T = RipplableListItem> {
+  id: string
+  key: string
+  src: string
+  alt: string
+  listIndex: number
+  raw: T
+}
+```
+
 ### Props
 
-#### `list`
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `list` | `RipplableListItem[]` | — | Required. Card data source; an empty array renders an empty scene. |
+| `fps` | `boolean` | `false` | Displays FPS, average frame time, and estimated dropped frames. |
+| `autoplay` | `boolean \| number` | `false` | `true` uses the default speed of `6`; a number sets the speed; negative values play in reverse; `0` remains enabled without advancing. |
+| `config` | `Partial<RipplableConfig>` | `{}` | Overrides the default motion and spatial parameters. |
+| `visibleCount` | `number` | `36` | Number of card slots reused at once. Values below `1` render no cards. |
+| `perspective` | `string` | `'2000px'` | CSS `perspective` for the 3D scene. |
+| `perspectiveOrigin` | `string` | `'10% 10%'` | CSS `perspective-origin` for the 3D scene. |
+| `laneTransform` | `string` | `'translateY(100px)'` | CSS transform applied to the card lane container. |
 
-- Type: `RipplableListItem[]`
-- Required: yes
-- Description: The data source for the lane. Each item can be either a string URL or an object with `src`, `alt`, and optional `id`.
+### Autoplay Rules
 
-#### `fps`
-
-- Type: `boolean`
-- Default: `false`
-- Description: Enables the FPS monitor overlay.
-
-#### `autoplay`
-
-- Type: `boolean | number`
-- Default: `false`
-- Description: Controls whether the lane auto-plays. `true` enables autoplay, and a number sets the playback speed. Negative values play in reverse.
-
-#### `config`
-
-- Type: `Partial<RipplableConfig>`
-- Default: `{}`
-- Description: Partial override of the internal motion layout settings. Use `defaultRipplableConfig` as the baseline and then override the fields you need.
-
-#### `visibleCount`
-
-- Type: `number`
-- Default: `36`
-- Description: Number of rendered card slots in the scene. More cards lead to richer depth but more DOM and rendering cost.
-
-#### `perspective`
-
-- Type: `string`
-- Default: `'2000px'`
-- Description: Perspective distance for the 3D scene.
-
-#### `perspectiveOrigin`
-
-- Type: `string`
-- Default: `'10% 10%'`
-- Description: Coordinates of the perspective origin.
-
-#### `laneTransform`
-
-- Type: `string`
-- Default: `'translateY(100px)'`
-- Description: Optional transform applied to the lane container for fine-tuning its placement.
-
-### Motion config parameters
-
-The component uses a `RipplableConfig` object to control the motion behavior. Common fields are:
-
-- `wheelInputScale`
-- `touchInputScale`
-- `baseScrollFollow`
-- `maxScrollFollow`
-- `followVelocityInfluence`
-- `inputVelocityGain`
-- `inputVelocityDecay`
-- `waveScrollGain`
-- `maxWaveAmplitude`
-- `waveFrequency`
-- `waveResponseBase`
-- `waveResponseGain`
-- `maxWaveResponse`
-- `waveTiltXGain`
-- `maxWaveTiltX`
-- `spacingX`
-- `spacingY`
-- `spacingZ`
+- `true`: plays at the default speed of `6`
+- `false`: stops autoplay
+- Positive number: plays forward
+- Negative number: plays in reverse
+- The absolute value of a non-zero speed is clamped to `0.5`–`24`
+- Non-finite numbers fall back to the default speed of `6`
 
 ### Slots
 
-#### Default slot
+#### Default Slot
 
-The default slot renders above the card lane and is suitable for overlays, controls, or decorative UI.
+Rendered above the card scene, making it suitable for titles, buttons, and other overlays. The overlay uses `pointer-events: none` by default; interactive elements must restore pointer events explicitly:
 
-#### `card` slot
+```css
+.controls {
+  pointer-events: auto;
+}
+```
 
-Use the `card` slot to completely customize each card's markup. The slot receives:
+To prevent wheel or touch interactions on buttons, inputs, or other controls from driving the card lane, add `data-ripplable-interactive` to the element or one of its ancestors:
 
-- `item`
-- `resolvedItem`
-- `src`
-- `alt`
-- `label`
-- `index`
-- `slotIndex`
+```vue
+<button class="controls" data-ripplable-interactive>
+  Pause
+</button>
+```
+
+#### `card` Slot
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `item` | `RipplableListItem \| null` | Original data item. |
+| `resolvedItem` | `ResolvedRipplableItem \| null` | Normalized data item. |
+| `src` | `string` | Image URL. |
+| `alt` | `string` | Image alternative text. |
+| `label` | `string` | Current data index, zero-padded from `00`. |
+| `index` | `number` | Current data item index. |
+| `slotIndex` | `number` | Current reused slot index. |
+
+### Events
+
+When its internal state changes actively, the component emits both Vue `update:*` events and their corresponding semantic events:
+
+| Event | Payload |
+| --- | --- |
+| `update:config` / `config-change` | `RipplableConfig` |
+| `update:fps` / `fps-change` | `boolean` |
+| `update:autoplay` / `autoplay-change` | `boolean \| number` |
+
+The current public interface does not include built-in controls, so these events are primarily reserved for custom control layers and future extensions. Updating a prop directly from the parent does not emit the event again.
+
+## Motion Configuration
+
+Create a configuration from `defaultRipplableConfig`, or pass only the fields you want to override:
+
+```ts
+import type { RipplableConfig } from 'ripplable'
+
+import { defaultRipplableConfig } from 'ripplable'
+
+const config: Partial<RipplableConfig> = {
+  ...defaultRipplableConfig,
+  wheelInputScale: 0.35,
+  maxWaveAmplitude: 140,
+  spacingX: 260,
+}
+```
+
+| Field | Default | Description |
+| --- | ---: | --- |
+| `wheelInputScale` | `0.5` | Scales wheel input. |
+| `touchInputScale` | `0.75` | Scales touch movement. |
+| `baseScrollFollow` | `0.085` | Base interpolation strength toward the target position. |
+| `maxScrollFollow` | `0.28` | Maximum follow strength. |
+| `followVelocityInfluence` | `0.004` | Influence of input velocity on follow strength. |
+| `inputVelocityGain` | `0.18` | Gain applied when converting input delta to velocity. |
+| `inputVelocityDecay` | `0.82` | Per-frame input velocity decay. |
+| `waveScrollGain` | `4.8` | Gain applied when converting scroll velocity to wave amplitude. |
+| `maxWaveAmplitude` | `180` | Maximum wave displacement. |
+| `waveFrequency` | `1.05` | Wave phase frequency between adjacent cards. |
+| `waveResponseBase` | `0.06` | Base wave response. |
+| `waveResponseGain` | `0.008` | Influence of velocity on wave response. |
+| `maxWaveResponse` | `0.2` | Maximum wave response. |
+| `waveTiltXGain` | `0.04` | Gain applied when converting wave amplitude to X-axis tilt. |
+| `maxWaveTiltX` | `12` | Maximum X-axis tilt angle. |
+| `spacingX` | `240` | X-axis spacing between adjacent cards and the scroll index step. |
+| `spacingY` | `-84` | Y-axis offset between adjacent cards. |
+| `spacingZ` | `-288` | Z-axis depth between adjacent cards. |
+
+## Exports
+
+```ts
+import type {
+  ResolvedRipplableItem,
+  RipplableAutoplay,
+  RipplableConfig,
+  RipplableListItem,
+} from 'ripplable'
+
+import {
+  clampRipplableAutoplaySpeed,
+  createRipplableConfig,
+  defaultRipplableAutoplaySpeed,
+  defaultRipplableConfig,
+  formatRipplableLabel,
+  maxRipplableAutoplaySpeed,
+  normalizeRipplableAutoplay,
+  normalizeRipplableItem,
+  Ripplable,
+} from 'ripplable'
+```
+
+## License
+
+[MIT](https://github.com/zyyv/ripplable/blob/main/packages/ui/LICENSE)
