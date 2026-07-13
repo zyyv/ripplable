@@ -17,7 +17,6 @@
     "@antfu/eslint-config": "catalog:",
     "bumpp": "catalog:",
     "eslint": "catalog:",
-    "netlify-cli": "catalog:",
     "typescript": "catalog:"
   }
 }

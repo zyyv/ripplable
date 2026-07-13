@@ -5,7 +5,6 @@ packages:
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
-  netlify-cli: true
   sharp: true
   unix-dgram: true
 
@@ -15,7 +14,6 @@ catalog:
   '@vitejs/plugin-vue': ^6.0.7
   bumpp: ^11.1.0
   eslint: ^10.7.0
-  netlify-cli: ^26.2.0
   typescript: ~6.0.3
   unplugin-dts: ^1.0.3
   vite: ^8.1.4
