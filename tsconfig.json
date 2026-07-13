@@ -1,7 +1,0 @@
-{
-  "references": [
-    { "path": "./playground" },
-    { "path": "./packages/ui" }
-  ],
-  "files": []
-}

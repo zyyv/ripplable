@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import {
-  Ripplable,
-  defaultRipplableConfig,
-} from 'ripplable'
+import { Ripplable } from 'ripplable'
 
 const imageSources = [
   '/images/11d2f7cd-e5b9-482d-8066-a009687161bc.png',
@@ -23,7 +20,6 @@ const imageSources = [
   '/images/f67ff078-008a-461c-9863-7693edc89761.png',
 ]
 
-const initialConfig = { ...defaultRipplableConfig }
 </script>
 
 <template>

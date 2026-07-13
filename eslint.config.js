@@ -7,4 +7,10 @@ export default antfu(
       '**/node_modules',
     ],
   },
+  {
+    files: ['pnpm-workspace.yaml'],
+    rules: {
+      'pnpm/yaml-enforce-settings': 'off',
+    },
+  },
 )

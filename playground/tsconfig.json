@@ -1,7 +1,14 @@
 {
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ],
-  "files": []
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "useDefineForClassFields": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "ripplable": ["../packages/ui/src/index.ts"],
+      "ripplable/*": ["../packages/ui/src/*"]
+    },
+    "types": ["vite/client", "node"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts"]
 }

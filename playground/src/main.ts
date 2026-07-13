@@ -1,8 +1,7 @@
 import { createApp } from 'vue'
 
-import 'ripplable/styles.css'
-import './index.css'
-
 import App from './App.vue'
+
+import './index.css'
 
 createApp(App).mount('#root')

@@ -2,14 +2,21 @@ packages:
   - playground
   - packages/*
 
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  netlify-cli: true
+  sharp: true
+  unix-dgram: true
+
 catalog:
-  '@antfu/eslint-config': ^2.6.3
-  '@types/node': ^24.12.0
-  '@vitejs/plugin-vue': ^6.0.5
+  '@antfu/eslint-config': ^9.1.0
+  '@types/node': ^26.1.1
+  '@vitejs/plugin-vue': ^6.0.7
   bumpp: ^11.1.0
-  eslint: ^9.39.4
-  netlify-cli: ^24.3.0
-  typescript: ~5.9.3
-  vite: ^8.0.0
-  vue: ^3.5.30
-  vue-tsc: ^3.2.6
+  eslint: ^10.7.0
+  netlify-cli: ^26.2.0
+  typescript: ~6.0.3
+  vite: ^8.1.4
+  vue: ^3.5.39
+  vue-tsc: ^3.3.7
