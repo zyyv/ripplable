@@ -1,7 +1,7 @@
 {
   "name": "ripplable",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1-beta.1",
   "description": "A flowing, interactive 3D card lane component for Vue 3.",
   "license": "MIT",
   "keywords": [
