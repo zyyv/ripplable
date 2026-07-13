@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   Ripplable,
-  RipplableConfigPanel,
   defaultRipplableConfig,
 } from '@ripplable/ui'
 
@@ -29,8 +28,6 @@ const initialConfig = { ...defaultRipplableConfig }
 
 <template>
   <Ripplable :autoplay="true" :config="initialConfig" :fps="true" :list="imageSources">
-    <RipplableConfigPanel />
-
     <template #card="{ src, label, index }">
       <div class="demo-card">
         <img :src="src" alt="" class="demo-card__image">

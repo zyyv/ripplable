@@ -1,39 +1,129 @@
-import type { InjectionKey, Ref } from 'vue'
-import { inject } from 'vue'
-
 export interface RipplableConfig {
+  /**
+   * Wheel input sensitivity. Higher values make the lane react more aggressively to mouse wheel scrolling.
+   *
+   * 滚轮输入灵敏度。值越大，滚轮滚动对卡片流的响应越强。
+   */
   wheelInputScale: number
+
+  /**
+   * Touch input sensitivity. Higher values make touch dragging move the lane more strongly.
+   *
+   * 触摸输入灵敏度。值越大，触摸拖拽带动卡片流的幅度越大。
+   */
   touchInputScale: number
+
+  /**
+   * Base follow strength. Sets the baseline amount of interpolation toward the target scroll position.
+   *
+   * 基础跟随强度。控制卡片流向目标滚动位置回拉时的基础插值强度。
+   */
   baseScrollFollow: number
+
+  /**
+   * Maximum follow strength. Caps how quickly the lane can catch up to the target scroll.
+   *
+   * 最大跟随强度。限制卡片流对目标滚动位置的最大追赶速度。
+   */
   maxScrollFollow: number
+
+  /**
+   * Velocity influence on follow strength. Faster input makes the follow behavior stronger.
+   *
+   * 速度对跟随强度的影响。输入速度越快，跟随行为越强。
+   */
   followVelocityInfluence: number
+
+  /**
+   * Input velocity gain. Controls how strongly input movement boosts current motion velocity.
+   *
+   * 输入速度增益。控制输入运动对当前运动速度的放大程度。
+   */
   inputVelocityGain: number
+
+  /**
+   * Input velocity decay. Decays the motion velocity over time to avoid runaway motion.
+   *
+   * 输入速度衰减。随着时间推移衰减当前输入速度，避免运动失控。
+   */
   inputVelocityDecay: number
+
+  /**
+   * Wave gain response to scroll speed. Larger values make the wave motion more pronounced.
+   *
+   * 波浪随滚动速度放大的幅度。值越大，波浪运动越明显。
+   */
   waveScrollGain: number
+
+  /**
+   * Maximum wave amplitude. Caps the vertical displacement created by the wave effect.
+   *
+   * 波浪最大振幅。限制波浪效果造成的最大上下偏移量。
+   */
   maxWaveAmplitude: number
+
+  /**
+   * Wave frequency. Controls how quickly the wave oscillates along the lane.
+   *
+   * 波浪频率。控制波浪沿卡片流往复变化的快慢。
+   */
   waveFrequency: number
+
+  /**
+   * Base wave response. The minimum speed-driven wave response used as a baseline.
+   *
+   * 波浪基准响应值。作为波浪响应的基础最低值。
+   */
   waveResponseBase: number
+
+  /**
+   * Wave response gain. Increases the wave response as the speed rises.
+   *
+   * 波浪响应增益。随着速度增加，波浪响应会更快放大。
+   */
   waveResponseGain: number
+
+  /**
+   * Maximum wave response. Caps the overall responsiveness of the wave effect.
+   *
+   * 波浪最大响应值。限制波浪效果的整体响应上限。
+   */
   maxWaveResponse: number
+
+  /**
+   * Tilt gain for the wave effect on the X axis. Higher values create stronger card tilt.
+   *
+   * 波浪引起的 X 轴倾斜增益。值越大，卡片的倾斜越明显。
+   */
   waveTiltXGain: number
+
+  /**
+   * Maximum tilt allowed by the wave effect on the X axis.
+   *
+   * 波浪导致的 X 轴最大倾斜角度。
+   */
   maxWaveTiltX: number
+
+  /**
+   * Horizontal spacing between cards in the lane.
+   *
+   * 卡片沿 X 轴方向的间距。
+   */
   spacingX: number
+
+  /**
+   * Vertical offset between cards in the lane.
+   *
+   * 卡片沿 Y 轴方向的偏移量。
+   */
   spacingY: number
+
+  /**
+   * Depth spacing between cards in the lane, affecting their z-order and perspective layering.
+   *
+   * 卡片沿 Z 轴方向的层级深度间距，会影响透视下的前后层次。
+   */
   spacingZ: number
-}
-
-export interface RipplableControlDefinition {
-  key: keyof RipplableConfig
-  label: string
-  min: number
-  max: number
-  step: number
-}
-
-export interface RipplableControlSection {
-  title: string
-  description: string
-  controls: RipplableControlDefinition[]
 }
 
 export type RipplableAutoplay = boolean | number
@@ -54,22 +144,6 @@ export interface ResolvedRipplableItem<T = RipplableListItem> {
   alt: string
   listIndex: number
   raw: T
-}
-
-export interface RipplableContext {
-  config: RipplableConfig
-  fps: Ref<boolean>
-  autoplay: Ref<RipplableAutoplay>
-  autoplayEnabled: Ref<boolean>
-  autoplaySpeed: Ref<number>
-  defaultConfig: Readonly<RipplableConfig>
-  defaultAutoplaySpeed: number
-  updateConfig: (key: keyof RipplableConfig, value: number) => void
-  replaceConfig: (value?: Partial<RipplableConfig>) => void
-  resetConfig: () => void
-  setFps: (value: boolean) => void
-  setAutoplay: (value: RipplableAutoplay) => void
-  setAutoplaySpeed: (value: number) => void
 }
 
 export const defaultRipplableConfig: RipplableConfig = {
@@ -95,53 +169,6 @@ export const defaultRipplableConfig: RipplableConfig = {
 
 export const defaultRipplableAutoplaySpeed = 6
 export const maxRipplableAutoplaySpeed = 24
-
-export const ripplableControlSections: RipplableControlSection[] = [
-  {
-    title: 'Input',
-    description: 'How aggressively wheel and touch drive the strip.',
-    controls: [
-      { key: 'wheelInputScale', label: 'Wheel Scale', min: 0.1, max: 1.2, step: 0.01 },
-      { key: 'touchInputScale', label: 'Touch Scale', min: 0.1, max: 1.6, step: 0.01 },
-      { key: 'inputVelocityGain', label: 'Input Gain', min: 0.02, max: 0.6, step: 0.01 },
-      { key: 'inputVelocityDecay', label: 'Input Decay', min: 0.5, max: 0.98, step: 0.01 },
-    ],
-  },
-  {
-    title: 'Follow',
-    description: 'How fast the rendered strip catches the target scroll.',
-    controls: [
-      { key: 'baseScrollFollow', label: 'Base Follow', min: 0.02, max: 0.3, step: 0.005 },
-      { key: 'maxScrollFollow', label: 'Max Follow', min: 0.08, max: 0.6, step: 0.01 },
-      { key: 'followVelocityInfluence', label: 'Velocity Influence', min: 0.001, max: 0.02, step: 0.001 },
-    ],
-  },
-  {
-    title: 'Wave',
-    description: 'Speed controls how strong and how fast the wave reacts.',
-    controls: [
-      { key: 'waveScrollGain', label: 'Wave Gain', min: 0.5, max: 12, step: 0.1 },
-      { key: 'maxWaveAmplitude', label: 'Wave Max', min: 20, max: 320, step: 1 },
-      { key: 'waveFrequency', label: 'Wave Frequency', min: 0.2, max: 2.4, step: 0.01 },
-      { key: 'waveResponseBase', label: 'Response Base', min: 0.01, max: 0.18, step: 0.005 },
-      { key: 'waveResponseGain', label: 'Response Gain', min: 0.001, max: 0.03, step: 0.001 },
-      { key: 'maxWaveResponse', label: 'Response Max', min: 0.05, max: 0.45, step: 0.01 },
-      { key: 'waveTiltXGain', label: 'Tilt Gain', min: 0, max: 0.12, step: 0.002 },
-      { key: 'maxWaveTiltX', label: 'Tilt Max', min: 0, max: 24, step: 0.5 },
-    ],
-  },
-  {
-    title: 'Path',
-    description: 'Layout spacing for the infinite card lane.',
-    controls: [
-      { key: 'spacingX', label: 'Spacing X', min: 120, max: 380, step: 1 },
-      { key: 'spacingY', label: 'Spacing Y', min: -180, max: 40, step: 1 },
-      { key: 'spacingZ', label: 'Spacing Z', min: -420, max: -80, step: 1 },
-    ],
-  },
-]
-
-export const ripplableContextKey: InjectionKey<RipplableContext> = Symbol('ripplable-context')
 
 export function createRipplableConfig(config: Partial<RipplableConfig> = {}): RipplableConfig {
   return {
@@ -177,16 +204,6 @@ export function normalizeRipplableAutoplay(value: RipplableAutoplay | undefined)
   }
 }
 
-export function formatRipplableControlValue(value: number, step: number) {
-  if (Math.abs(value) >= 100 || step >= 1)
-    return value.toFixed(0)
-  if (step >= 0.1)
-    return value.toFixed(1)
-  if (step >= 0.01)
-    return value.toFixed(2)
-  return value.toFixed(3)
-}
-
 export function formatRipplableLabel(index: number) {
   return String(index).padStart(2, '0')
 }
@@ -215,14 +232,6 @@ export function normalizeRipplableItem<T extends RipplableListItem>(item: T, ind
     listIndex: index,
     raw: item,
   }
-}
-
-export function useRipplableContext() {
-  const context = inject(ripplableContextKey, null)
-  if (!context)
-    throw new Error('Ripplable context is unavailable. Use this component inside <Ripplable>.')
-
-  return context
 }
 
 function getRipplableAssetId(src: string) {

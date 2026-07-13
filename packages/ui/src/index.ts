@@ -1,7 +1,2 @@
-export { default as Badge } from './components/ui/Badge.vue'
-export { default as Button } from './components/ui/Button.vue'
-export { default as Card } from './components/ui/Card.vue'
 export { default as Ripplable } from './components/ui/Ripplable.vue'
-export { default as RipplableConfigPanel } from './components/ui/RipplableConfigPanel.vue'
-export { default as Switch } from './components/ui/Switch.vue'
 export * from './lib/ripplable'

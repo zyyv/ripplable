@@ -1,16 +1,13 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, provide, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 
 import {
   clampRipplableAutoplaySpeed,
   createRipplableConfig,
-  defaultRipplableAutoplaySpeed,
-  defaultRipplableConfig,
   formatRipplableLabel,
   normalizeRipplableItem,
   normalizeRipplableAutoplay,
-  ripplableContextKey,
   type RipplableAutoplay,
   type ResolvedRipplableItem,
   type RipplableConfig,
@@ -131,18 +128,6 @@ function replaceConfig(nextConfig: Partial<RipplableConfig> = {}, shouldEmit = t
     emitConfigChange()
 }
 
-function updateConfig(key: keyof RipplableConfig, value: number) {
-  if (motionConfig[key] === value)
-    return
-
-  motionConfig[key] = value
-  emitConfigChange()
-}
-
-function resetConfig() {
-  replaceConfig()
-}
-
 function emitAutoplayChange() {
   emit('update:autoplay', autoplay.value)
   emit('autoplay-change', autoplay.value)
@@ -161,13 +146,6 @@ function setAutoplay(nextValue: RipplableAutoplay, shouldEmit = true) {
     emitAutoplayChange()
 }
 
-function setAutoplaySpeed(nextValue: number, shouldEmit = true) {
-  autoplaySpeed.value = clampRipplableAutoplaySpeed(nextValue)
-
-  if (shouldEmit)
-    emitAutoplayChange()
-}
-
 function setFps(nextValue: boolean, shouldEmit = true) {
   if (fpsEnabled.value === nextValue)
     return
@@ -181,22 +159,6 @@ function setFps(nextValue: boolean, shouldEmit = true) {
     emit('fps-change', nextValue)
   }
 }
-
-provide(ripplableContextKey, {
-  config: motionConfig,
-  fps: fpsEnabled,
-  autoplay,
-  autoplayEnabled,
-  autoplaySpeed,
-  defaultConfig: defaultRipplableConfig,
-  defaultAutoplaySpeed: defaultRipplableAutoplaySpeed,
-  updateConfig,
-  replaceConfig: nextConfig => replaceConfig(nextConfig),
-  resetConfig,
-  setFps: nextValue => setFps(nextValue),
-  setAutoplay: nextValue => setAutoplay(nextValue),
-  setAutoplaySpeed: nextValue => setAutoplaySpeed(nextValue),
-})
 
 function ensureImageDecoded(src: string) {
   const cached = decodedImageCache.get(src)
