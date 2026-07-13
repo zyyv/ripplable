@@ -15,6 +15,9 @@ catalogs:
     '@vitejs/plugin-vue':
       specifier: ^6.0.5
       version: 6.0.5
+    bumpp:
+      specifier: ^11.1.0
+      version: 11.1.0
     eslint:
       specifier: ^9.39.4
       version: 9.39.4
@@ -41,25 +44,40 @@ importers:
       '@antfu/eslint-config':
         specifier: 'catalog:'
         version: 2.27.3(@typescript-eslint/utils@8.57.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.30)(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
+      bumpp:
+        specifier: 'catalog:'
+        version: 11.1.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.4(jiti@2.6.1)
       netlify-cli:
         specifier: 'catalog:'
-        version: 24.3.0(@types/node@25.5.0)(picomatch@4.0.3)
+        version: 24.3.0(@types/node@25.5.0)(picomatch@4.0.5)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
 
   packages/ui:
     devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: 'catalog:'
+        version: 6.0.5(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.9.0))(vue@3.5.30(typescript@5.9.3))
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vite:
+        specifier: 'catalog:'
+        version: 8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.9.0)
       vue:
         specifier: 'catalog:'
         version: 3.5.30(typescript@5.9.3)
+      vue-tsc:
+        specifier: 'catalog:'
+        version: 3.2.6(typescript@5.9.3)
 
   playground:
     dependencies:
-      '@ripplable/ui':
+      ripplable:
         specifier: workspace:*
         version: link:../packages/ui
       vue:
@@ -71,13 +89,13 @@ importers:
         version: 24.12.0
       '@vitejs/plugin-vue':
         specifier: 'catalog:'
-        version: 6.0.5(vite@8.0.1(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2))(vue@3.5.30(typescript@5.9.3))
+        version: 6.0.5(vite@8.0.1(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.9.0))(vue@3.5.30(typescript@5.9.3))
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
       vite:
         specifier: 'catalog:'
-        version: 8.0.1(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)
+        version: 8.0.1(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.9.0)
       vue-tsc:
         specifier: 'catalog:'
         version: 3.2.6(typescript@5.9.3)
@@ -1175,6 +1193,9 @@ packages:
     resolution: {integrity: sha512-bWLDlHsBlgKY/05wDN/V3ETcn5G2SV/SiA2ZmNvKGGlmVX4G5li7GRDhHcgYvHJHyJ8TUStqg2xtHmCs0UbAbg==}
     engines: {node: '>=18'}
 
+  '@quansync/fs@1.0.0':
+    resolution: {integrity: sha512-4TJ3DFtlf1L5LDMaM6CanJ/0lckGNtJcMjQ1NAV6zDmA0tEHKZtxNKin8EgPaVX1YzljbxckyT2tJrpQKAtngQ==}
+
   '@rolldown/binding-android-arm64@1.0.0-rc.10':
     resolution: {integrity: sha512-jOHxwXhxmFKuXztiu1ORieJeTbx5vrTkcOkkkn2d35726+iwhrY1w/+nYY/AGgF12thg33qC3R1LMBF5tHTZHg==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -1745,6 +1766,9 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
+  args-tokenizer@0.3.0:
+    resolution: {integrity: sha512-xXAd7G2Mll5W8uo37GETpQ2VrE84M181Z7ugHFGQnJZ50M2mbOv0osSZ9VsSgPfJQ+LVG0prSi0th+ELMsno7Q==}
+
   array-timsort@1.0.3:
     resolution: {integrity: sha512-/+3GRL7dDAGEfM6TseQk/U+mi18TU2Ms9I3UlLdUMhz2hbvGNTKdj9xniwXfUqgYhHxRx0+8UnKkvlNwVU+cWQ==}
 
@@ -1873,6 +1897,11 @@ packages:
     resolution: {integrity: sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw==}
     engines: {node: '>=6'}
 
+  bumpp@11.1.0:
+    resolution: {integrity: sha512-jdwOGMyX8JIqpQ0N2RMRR87DHZaoJnUtui5lU9LqFfFK5JC0H8qY9uWqXoa+dEWt/K7rOmmsoyiZB8RBM7RPBQ==}
+    engines: {node: '>=20.19.0'}
+    hasBin: true
+
   bundle-name@4.1.0:
     resolution: {integrity: sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q==}
     engines: {node: '>=18'}
@@ -1884,6 +1913,10 @@ packages:
   bytes@3.1.2:
     resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
     engines: {node: '>= 0.8'}
+
+  cac@7.0.0:
+    resolution: {integrity: sha512-tixWYgm5ZoOD+3g6UTea91eow5z6AAHaho3g0V9CNSNb45gM8SmflpAc+GRd1InC4AqN/07Unrgp56Y94N9hJQ==}
+    engines: {node: '>=20.19.0'}
 
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
@@ -3377,6 +3410,9 @@ packages:
     resolution: {integrity: sha512-1e4qoRgnn448pRuMvKGsFFymUCquZV0mpGgOyIKNgD3JVDTsVJyRBGH/Fm0tBb8WsWGgmB1mDe6/yJMQM37DUA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
+  jsonc-parser@3.3.1:
+    resolution: {integrity: sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==}
+
   jsonpointer@5.0.1:
     resolution: {integrity: sha512-p/nXbhSEcu3pZRdkW1OfJhpsVtW1gd4Wa1fnQc9YLiTfAjn0312eMKimbdIQzuZl9aa9xUGaRlP9T/CJE/ditQ==}
     engines: {node: '>=0.10.0'}
@@ -4006,6 +4042,9 @@ packages:
   package-manager-detector@0.2.11:
     resolution: {integrity: sha512-BEnLolu+yuz22S56CU1SUKq3XC3PkwD5wv4ikR4MfGvnRVcmzXR9DwSlW2fEamyTPyXHomBJRzgapeuBvRNzJQ==}
 
+  package-manager-detector@1.7.0:
+    resolution: {integrity: sha512-xg1eHpwYL/D/HEdWw2goFZP6vV0FH7W+PZ5rFkGjdIDLtxq7EkzBUeT3m+lndYCt8wKbmofUu1MUdMCXkCk9ZQ==}
+
   parallel-transform@1.2.0:
     resolution: {integrity: sha512-P2vSmIu38uIlvdcU7fDkyrxj33gTUy/ABO5ZUbGowxNCopBq/OoD42bP4UmMrJoPyk4Uqf0mu3mtWBhHCZD8yg==}
 
@@ -4145,6 +4184,10 @@ packages:
     resolution: {integrity: sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==}
     engines: {node: '>=12'}
 
+  picomatch@4.0.5:
+    resolution: {integrity: sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A==}
+    engines: {node: '>=12'}
+
   picoquery@2.5.0:
     resolution: {integrity: sha512-j1kgOFxtaCyoFCkpoYG2Oj3OdGakadO7HZ7o5CqyRazlmBekKhbDoUnNnXASE07xSY4nDImWZkrZv7toSxMi/g==}
 
@@ -4268,6 +4311,9 @@ packages:
 
   quansync@0.2.11:
     resolution: {integrity: sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA==}
+
+  quansync@1.0.0:
+    resolution: {integrity: sha512-5xZacEEufv3HSTPQuchrvV6soaiACMFnq1H8wkVioctoH3TRha9Sz66lOxRwPK/qZj7HPiSveih9yAyh98gvqA==}
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
@@ -4772,8 +4818,16 @@ packages:
   tinyexec@0.3.2:
     resolution: {integrity: sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==}
 
+  tinyexec@1.2.4:
+    resolution: {integrity: sha512-SHf/r48b7vOrjve9PxJo3MN5v5yuyjHvdUcrQffT3WXMUfnGmHDVbC4k3sHJaJTgZCwpUplIaAo5ANtMyp3YHg==}
+    engines: {node: '>=18'}
+
   tinyglobby@0.2.15:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
+    engines: {node: '>=12.0.0'}
+
+  tinyglobby@0.2.17:
+    resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
     engines: {node: '>=12.0.0'}
 
   tmp-promise@3.0.3:
@@ -4890,6 +4944,12 @@ packages:
   ulid@3.0.1:
     resolution: {integrity: sha512-dPJyqPzx8preQhqq24bBG1YNkvigm87K8kVEHCD+ruZg24t6IFEFv00xMWfxcC4djmFtiTLdFuADn4+DOz6R7Q==}
     hasBin: true
+
+  unconfig-core@7.5.0:
+    resolution: {integrity: sha512-Su3FauozOGP44ZmKdHy2oE6LPjk51M/TRRjHv2HNCWiDvfvCoxC2lno6jevMA91MYAdCdwP05QnWdWpSbncX/w==}
+
+  unconfig@7.5.0:
+    resolution: {integrity: sha512-oi8Qy2JV4D3UQ0PsopR28CzdQ3S/5A1zwsUwp/rosSbfhJ5z7b90bIyTwi/F7hCLD4SGcZVjDzd4XoUQcEanvA==}
 
   uncrypto@0.1.3:
     resolution: {integrity: sha512-Ql87qFHB3s/De2ClA9e0gsnS6zXG27SkTiSJwjCc9MebbfapQfuPzumMIUMi38ezPZVNFcHI9sUIepeQfw8J8Q==}
@@ -5231,6 +5291,11 @@ packages:
 
   yaml@2.8.2:
     resolution: {integrity: sha512-mplynKqc1C2hTVYxd0PU2xQAc22TI1vShAYGksCCfxbn/dFwnHTNi1bvYsBTkhdUNtGIf5xNOg938rrSSYvS9A==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
+
+  yaml@2.9.0:
+    resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
     engines: {node: '>= 14.6'}
     hasBin: true
 
@@ -5763,7 +5828,7 @@ snapshots:
       https-proxy-agent: 7.0.6(supports-color@10.2.2)
       node-fetch: 2.7.0
       nopt: 8.1.0
-      semver: 7.7.2
+      semver: 7.7.4
       tar: 7.5.9
     transitivePeerDependencies:
       - encoding
@@ -5824,7 +5889,7 @@ snapshots:
       yaml: 2.8.2
       yargs: 17.7.2
 
-  '@netlify/build@35.8.9(@opentelemetry/api@1.8.0)(@types/node@25.5.0)(picomatch@4.0.3)':
+  '@netlify/build@35.8.9(@opentelemetry/api@1.8.0)(@types/node@25.5.0)(picomatch@4.0.5)':
     dependencies:
       '@bugsnag/js': 8.8.1
       '@netlify/blobs': 10.7.0(supports-color@10.2.2)
@@ -5843,7 +5908,7 @@ snapshots:
       ansis: 4.2.0
       clean-stack: 5.3.0
       execa: 8.0.1
-      fdir: 6.5.0(picomatch@4.0.3)
+      fdir: 6.5.0(picomatch@4.0.5)
       figures: 6.1.0
       filter-obj: 6.1.0
       hot-shots: 11.4.0
@@ -5948,7 +6013,7 @@ snapshots:
       image-size: 2.0.2
       js-image-generator: 1.0.4
       parse-gitignore: 2.0.0
-      semver: 7.7.2
+      semver: 7.7.4
       tmp-promise: 3.0.3
       uuid: 13.0.0
       write-file-atomic: 5.0.1
@@ -6066,7 +6131,7 @@ snapshots:
       jwt-decode: 4.0.0
       lambda-local: 2.2.0
       read-package-up: 11.0.0
-      semver: 7.7.2
+      semver: 7.7.4
       source-map-support: 0.5.21
     transitivePeerDependencies:
       - bare-abort-controller
@@ -6447,7 +6512,7 @@ snapshots:
       '@opentelemetry/propagator-b3': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/propagator-jaeger': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.0)
-      semver: 7.7.2
+      semver: 7.7.4
 
   '@opentelemetry/semantic-conventions@1.28.0': {}
 
@@ -6547,6 +6612,10 @@ snapshots:
       untildify: 4.0.0
     transitivePeerDependencies:
       - supports-color
+
+  '@quansync/fs@1.0.0':
+    dependencies:
+      quansync: 1.0.0
 
   '@rolldown/binding-android-arm64@1.0.0-rc.10':
     optional: true
@@ -6859,10 +6928,16 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vitejs/plugin-vue@6.0.5(vite@8.0.1(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2))(vue@3.5.30(typescript@5.9.3))':
+  '@vitejs/plugin-vue@6.0.5(vite@8.0.1(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.9.0))(vue@3.5.30(typescript@5.9.3))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-rc.2
-      vite: 8.0.1(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2)
+      vite: 8.0.1(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.9.0)
+      vue: 3.5.30(typescript@5.9.3)
+
+  '@vitejs/plugin-vue@6.0.5(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.9.0))(vue@3.5.30(typescript@5.9.3))':
+    dependencies:
+      '@rolldown/pluginutils': 1.0.0-rc.2
+      vite: 8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.9.0)
       vue: 3.5.30(typescript@5.9.3)
 
   '@vitest/eslint-plugin@1.6.9(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)':
@@ -7129,6 +7204,8 @@ snapshots:
 
   argparse@2.0.1: {}
 
+  args-tokenizer@0.3.0: {}
+
   array-timsort@1.0.3: {}
 
   ascii-table@0.0.9: {}
@@ -7260,6 +7337,18 @@ snapshots:
 
   builtin-modules@3.3.0: {}
 
+  bumpp@11.1.0:
+    dependencies:
+      args-tokenizer: 0.3.0
+      cac: 7.0.0
+      jsonc-parser: 3.3.1
+      package-manager-detector: 1.7.0
+      semver: 7.7.4
+      tinyexec: 1.2.4
+      tinyglobby: 0.2.17
+      unconfig: 7.5.0
+      yaml: 2.9.0
+
   bundle-name@4.1.0:
     dependencies:
       run-applescript: 7.1.0
@@ -7267,6 +7356,8 @@ snapshots:
   byline@5.0.0: {}
 
   bytes@3.1.2: {}
+
+  cac@7.0.0: {}
 
   call-bind-apply-helpers@1.0.2:
     dependencies:
@@ -8239,6 +8330,10 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.3
 
+  fdir@6.5.0(picomatch@4.0.5):
+    optionalDependencies:
+      picomatch: 4.0.5
+
   fecha@4.2.3: {}
 
   fetch-blob@3.2.0:
@@ -8868,6 +8963,8 @@ snapshots:
       espree: 9.6.1
       semver: 7.7.4
 
+  jsonc-parser@3.3.1: {}
+
   jsonpointer@5.0.1: {}
 
   jsonwebtoken@9.0.3:
@@ -9244,13 +9341,13 @@ snapshots:
 
   negotiator@1.0.0: {}
 
-  netlify-cli@24.3.0(@types/node@25.5.0)(picomatch@4.0.3):
+  netlify-cli@24.3.0(@types/node@25.5.0)(picomatch@4.0.5):
     dependencies:
       '@fastify/static': 9.0.0
       '@netlify/ai': 0.4.1
       '@netlify/api': 14.0.18
       '@netlify/blobs': 10.7.0(supports-color@10.2.2)
-      '@netlify/build': 35.8.9(@opentelemetry/api@1.8.0)(@types/node@25.5.0)(picomatch@4.0.3)
+      '@netlify/build': 35.8.9(@opentelemetry/api@1.8.0)(@types/node@25.5.0)(picomatch@4.0.5)
       '@netlify/build-info': 10.4.0
       '@netlify/config': 24.4.3
       '@netlify/dev': 4.16.2
@@ -9427,7 +9524,7 @@ snapshots:
   normalize-package-data@6.0.2:
     dependencies:
       hosted-git-info: 7.0.2
-      semver: 7.7.2
+      semver: 7.7.4
       validate-npm-package-license: 3.0.4
 
   normalize-package-data@7.0.1:
@@ -9439,7 +9536,7 @@ snapshots:
   normalize-package-data@8.0.0:
     dependencies:
       hosted-git-info: 9.0.2
-      semver: 7.7.2
+      semver: 7.7.4
       validate-npm-package-license: 3.0.4
 
   normalize-path@2.1.1:
@@ -9596,11 +9693,13 @@ snapshots:
       ky: 1.14.3
       registry-auth-token: 5.1.1
       registry-url: 6.0.1
-      semver: 7.7.2
+      semver: 7.7.4
 
   package-manager-detector@0.2.11:
     dependencies:
       quansync: 0.2.11
+
+  package-manager-detector@1.7.0: {}
 
   parallel-transform@1.2.0:
     dependencies:
@@ -9727,6 +9826,8 @@ snapshots:
   picomatch@2.3.1: {}
 
   picomatch@4.0.3: {}
+
+  picomatch@4.0.5: {}
 
   picoquery@2.5.0: {}
 
@@ -9865,6 +9966,8 @@ snapshots:
       side-channel: 1.1.0
 
   quansync@0.2.11: {}
+
+  quansync@1.0.0: {}
 
   queue-microtask@1.2.3: {}
 
@@ -10442,10 +10545,17 @@ snapshots:
 
   tinyexec@0.3.2: {}
 
+  tinyexec@1.2.4: {}
+
   tinyglobby@0.2.15:
     dependencies:
       fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3
+
+  tinyglobby@0.2.17:
+    dependencies:
+      fdir: 6.5.0(picomatch@4.0.5)
+      picomatch: 4.0.5
 
   tmp-promise@3.0.3:
     dependencies:
@@ -10537,6 +10647,19 @@ snapshots:
       random-bytes: 1.0.0
 
   ulid@3.0.1: {}
+
+  unconfig-core@7.5.0:
+    dependencies:
+      '@quansync/fs': 1.0.0
+      quansync: 1.0.0
+
+  unconfig@7.5.0:
+    dependencies:
+      '@quansync/fs': 1.0.0
+      defu: 6.1.4
+      jiti: 2.6.1
+      quansync: 1.0.0
+      unconfig-core: 7.5.0
 
   uncrypto@0.1.3: {}
 
@@ -10672,7 +10795,7 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vite@8.0.1(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.8.2):
+  vite@8.0.1(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.9.0):
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.3
@@ -10684,7 +10807,21 @@ snapshots:
       esbuild: 0.27.3
       fsevents: 2.3.3
       jiti: 2.6.1
-      yaml: 2.8.2
+      yaml: 2.9.0
+
+  vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(yaml@2.9.0):
+    dependencies:
+      lightningcss: 1.32.0
+      picomatch: 4.0.3
+      postcss: 8.5.8
+      rolldown: 1.0.0-rc.10
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@types/node': 25.5.0
+      esbuild: 0.27.3
+      fsevents: 2.3.3
+      jiti: 2.6.1
+      yaml: 2.9.0
 
   vscode-uri@3.1.0: {}
 
@@ -10831,6 +10968,8 @@ snapshots:
       yaml: 2.8.2
 
   yaml@2.8.2: {}
+
+  yaml@2.9.0: {}
 
   yargs-parser@21.1.1: {}
 

@@ -1,16 +1,57 @@
 {
-  "name": "@ripplable/ui",
+  "name": "ripplable",
   "type": "module",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "description": "A flowing, interactive 3D card lane component for Vue 3.",
+  "license": "MIT",
+  "keywords": [
+    "vue",
+    "vue3",
+    "component",
+    "gallery",
+    "carousel",
+    "3d",
+    "animation"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
-    ".": "./src/index.ts",
-    "./styles.css": "./src/styles.css"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "pnpm run clean && vue-tsc -p tsconfig.build.json && vite build",
+    "clean": "rm -rf dist",
+    "typecheck": "vue-tsc -p tsconfig.json --noEmit",
+    "prepack": "pnpm run build"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "peerDependencies": {
-    "vue": "catalog:"
+    "vue": "^3.3.0"
   },
   "devDependencies": {
-    "vue": "catalog:"
+    "@vitejs/plugin-vue": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue": "catalog:",
+    "vue-tsc": "catalog:"
   }
 }

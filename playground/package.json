@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ripplable/ui": "workspace:*",
+    "ripplable": "workspace:*",
     "vue": "catalog:"
   },
   "devDependencies": {

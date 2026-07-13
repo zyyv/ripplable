@@ -1,6 +1,6 @@
 # ripplable
 
-`ripplable` is a `pnpm` workspace monorepo with a root-level Vue playground app and a reusable `@ripplable/ui` package.
+`ripplable` is a `pnpm` workspace monorepo with a root-level Vue playground app and a reusable `ripplable` package.
 
 ## Structure
 
@@ -36,4 +36,4 @@ pnpm preview
 ## Packages
 
 - `@ripplable/playground`: local sandbox for motion and UI experiments
-- `@ripplable/ui`: reusable component package consumed by the playground
+- `ripplable`: reusable component package consumed by the playground

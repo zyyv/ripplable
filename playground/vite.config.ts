@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@ripplable/ui': path.resolve(__dirname, '../packages/ui/src'),
+      'ripplable': path.resolve(__dirname, '../packages/ui/src'),
     },
     dedupe: ['vue'],
   },

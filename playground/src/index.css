@@ -7,10 +7,10 @@
     -apple-system,
     BlinkMacSystemFont,
     sans-serif;
-  background:
+  /* background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 30%),
     radial-gradient(circle at right 20%, rgba(109, 40, 217, 0.12), transparent 28%),
-    linear-gradient(180deg, #09090b 0%, #020202 100%);
+    linear-gradient(180deg, #09090b 0%, #020202 100%); */
   color: #f8fafc;
 }
 

@@ -1,2 +1,4 @@
-export { default as Ripplable } from './components/ui/Ripplable.vue'
-export * from './lib/ripplable'
+import './styles.css'
+
+export { default as Ripplable } from './Ripplable.vue'
+export * from './ripplable'

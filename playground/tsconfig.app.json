@@ -7,8 +7,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@ripplable/ui": ["../packages/ui/src/index.ts"],
-      "@ripplable/ui/*": ["../packages/ui/src/*"]
+      "ripplable": ["../packages/ui/src/index.ts"],
+      "ripplable/*": ["../packages/ui/src/*"]
     },
     "types": ["vite/client"]
   },

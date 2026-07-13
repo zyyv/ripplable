@@ -9,13 +9,13 @@
 ### 安装
 
 ```bash
-pnpm add @ripplable/ui
+pnpm add ripplable
 ```
 
 项目需要使用 Vue 3，并在应用入口或使用组件的样式文件中引入 Ripplable 样式：
 
 ```ts
-import '@ripplable/ui/styles.css'
+import 'ripplable/styles.css'
 ```
 
 ### 组件功能
@@ -38,8 +38,8 @@ import '@ripplable/ui/styles.css'
 import {
   Ripplable,
   type RipplableListItem,
-} from '@ripplable/ui'
-import '@ripplable/ui/styles.css'
+} from 'ripplable'
+import 'ripplable/styles.css'
 
 const projects: RipplableListItem[] = [
   { id: 'aurora', src: '/images/aurora.jpg', alt: 'Aurora identity', title: 'Aurora' },
@@ -232,13 +232,13 @@ interface RipplableItem {
 ### Installation
 
 ```bash
-pnpm add @ripplable/ui
+pnpm add ripplable
 ```
 
 Import the component stylesheet once in your application entry:
 
 ```ts
-import '@ripplable/ui/styles.css'
+import 'ripplable/styles.css'
 ```
 
 ### What the component does
@@ -259,8 +259,8 @@ import '@ripplable/ui/styles.css'
 import {
   Ripplable,
   defaultRipplableConfig,
-} from '@ripplable/ui'
-import '@ripplable/ui/styles.css'
+} from 'ripplable'
+import 'ripplable/styles.css'
 
 const images = ['/images/1.png', '/images/2.png', '/images/3.png']
 const config = { ...defaultRipplableConfig }

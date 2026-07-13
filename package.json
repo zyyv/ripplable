@@ -5,13 +5,16 @@
   "private": true,
   "packageManager": "pnpm@10.30.3",
   "scripts": {
-    "dev": "pnpm --filter @ripplable/playground dev",
-    "build": "pnpm --filter @ripplable/playground build",
+    "dev": "pnpm --filter ripplable dev",
+    "build": "pnpm --filter ripplable build",
+    "play": "pnpm --filter @ripplable/playground dev",
     "lint": "pnpm exec eslint .",
-    "preview": "pnpm --filter @ripplable/playground preview"
+    "preview": "pnpm --filter @ripplable/playground preview",
+    "release": "bumpp packages/ui/package.json --git-check --execute \"pnpm build\" && pnpm --filter ripplable publish"
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
+    "bumpp": "catalog:",
     "eslint": "catalog:",
     "netlify-cli": "catalog:",
     "typescript": "catalog:"

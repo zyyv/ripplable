@@ -12,7 +12,7 @@ import {
   type ResolvedRipplableItem,
   type RipplableConfig,
   type RipplableListItem,
-} from '../../lib/ripplable'
+} from './ripplable'
 
 interface RenderSlotState {
   slotIndex: number
@@ -34,13 +34,138 @@ const CARD_WIDTH = 320
 const CARD_HEIGHT = 384
 
 const props = withDefaults(defineProps<{
+  /**
+   * Source data for the card lane.
+   * Each item can be a string URL or an object with `src`/`alt` metadata.
+   *
+   * 可设置值:
+   * - `string[]`: image URL list
+   * - `{ src: string, alt?: string, id?: string | number }[]`
+   *
+   * 卡片流的数据源。
+   * 每一项可以是图片地址字符串，也可以是包含 `src` / `alt` 等元数据的对象。
+   *
+   * 可设置值:
+   * - `string[]`: 图片地址列表
+   * - `{ src: string, alt?: string, id?: string | number }[]`
+   *
+   * @example
+   * ```vue
+   * <Ripplable :list="['/images/1.png', '/images/2.png']" />
+   * ```
+   */
   list: RipplableListItem[]
+
+  /**
+   * Whether to show the FPS monitor overlay.
+   * 可设置值: `true | false`
+   *
+   * 是否显示 FPS 监控覆盖层。
+   * 可设置值: `true | false`
+   *
+   * @example
+   * ```vue
+   * <Ripplable :fps="true" />
+   * ```
+   */
   fps?: boolean
+
+  /**
+   * Controls autoplay.
+   * 可设置值: `true | false | number`
+   * - `true`: enable autoplay
+   * - `false`: disable autoplay
+   * - `number`: enable autoplay with a speed value; negative values play in reverse
+   *
+   * 控制是否自动播放。
+   * 可设置值: `true | false | number`
+   * - `true`: 开启自动播放
+   * - `false`: 关闭自动播放
+   * - `number`: 开启自动播放并指定速度；负数表示反向播放
+   *
+   * @example
+   * ```vue
+   * <Ripplable :autoplay="true" />
+   * <Ripplable :autoplay="6" />
+   * <Ripplable :autoplay="-6" />
+   * ```
+   */
   autoplay?: RipplableAutoplay
+
+  /**
+   * Partial motion config overrides for the lane.
+   * 可设置值: `Partial<RipplableConfig>`
+   * Example keys include `wheelInputScale`, `touchInputScale`, `spacingX`, `waveFrequency`, etc.
+   *
+   * 对卡片流运动配置的部分覆盖。
+   * 可设置值: `Partial<RipplableConfig>`
+   * 常见字段包含 `wheelInputScale`、`touchInputScale`、`spacingX`、`waveFrequency` 等。
+   *
+   * @example
+   * ```ts
+   * const config = {
+   *   wheelInputScale: 0.6,
+   *   spacingX: 260,
+   *   maxWaveAmplitude: 160,
+   * }
+   * ```
+   */
   config?: Partial<RipplableConfig>
+
+  /**
+   * Number of visible card slots rendered in the scene.
+   * 可设置值: `number` (recommended to keep it greater than `0`)
+   *
+   * 当前场景中同时渲染的卡片槽位数量。
+   * 可设置值: `number`（通常建议大于 `0`）
+   *
+   * @example
+   * ```vue
+   * <Ripplable :visible-count="24" />
+   * ```
+   */
   visibleCount?: number
+
+  /**
+   * Perspective distance used by the 3D stage.
+   * 可设置值: CSS perspective string such as `'2000px'`, `'1500px'`
+   *
+   * 3D 场景使用的透视距离。
+   * 可设置值: CSS perspective 字符串，如 `'2000px'`、`'1500px'`
+   *
+   * @example
+   * ```vue
+   * <Ripplable perspective="2000px" />
+   * ```
+   */
   perspective?: string
+
+  /**
+   * Perspective origin for the 3D stage.
+   * 可设置值: CSS position string such as `'10% 10%'`, `'50% 50%'`
+   *
+   * 3D 场景透视中心点的位置。
+   * 可设置值: CSS position 字符串，如 `'10% 10%'`、`'50% 50%'`
+   *
+   * @example
+   * ```vue
+   * <Ripplable perspective-origin="10% 10%" />
+   * ```
+   */
   perspectiveOrigin?: string
+
+  /**
+   * Transform applied to the lane container for layout tuning.
+   * 可设置值: CSS transform string such as `'translateY(100px)'`, `'translateY(0px)'`
+   *
+   * 应用于 lane 容器的变换，用于进行布局微调。
+   * 可设置值: CSS transform 字符串，如 `'translateY(100px)'`、`'translateY(0px)'`
+   *
+   * @example
+   * ```vue
+   * <Ripplable lane-transform="translateY(120px)" />
+   * ```
+   */
   laneTransform?: string
 }>(), {
   fps: false,

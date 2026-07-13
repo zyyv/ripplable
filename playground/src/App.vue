@@ -2,7 +2,7 @@
 import {
   Ripplable,
   defaultRipplableConfig,
-} from '@ripplable/ui'
+} from 'ripplable'
 
 const imageSources = [
   '/images/11d2f7cd-e5b9-482d-8066-a009687161bc.png',
@@ -27,8 +27,9 @@ const initialConfig = { ...defaultRipplableConfig }
 </script>
 
 <template>
-  <Ripplable :autoplay="true" :config="initialConfig" :fps="true" :list="imageSources">
-    <template #card="{ src, label, index }">
+  <div class="main-body">
+    <Ripplable :autoplay="true" :fps="true" :list="imageSources" >
+    <!-- <template #card="{ src, label, index }">
       <div class="demo-card">
         <img :src="src" alt="" class="demo-card__image">
         <div class="demo-card__shade" />
@@ -37,11 +38,21 @@ const initialConfig = { ...defaultRipplableConfig }
           <strong class="demo-card__title">Visual {{ index + 1 }}</strong>
         </div>
       </div>
-    </template>
+    </template> -->
   </Ripplable>
+  </div>
+  
 </template>
 
 <style scoped>
+
+.main-body{
+  margin: 100px auto;
+  width: 80%;
+  height: 80vh;
+  overflow: hidden;
+}
+
 .demo-card {
   position: relative;
   width: 100%;
