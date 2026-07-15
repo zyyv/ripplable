@@ -146,6 +146,17 @@ export interface ResolvedRipplableItem<T = RipplableListItem> {
   raw: T
 }
 
+export interface RipplableImageEvent<T = RipplableListItem> {
+  /** Original list item supplied by the consumer. */
+  item: T
+  /** Normalized item data used internally by Ripplable. */
+  resolvedItem: ResolvedRipplableItem<T>
+  /** Zero-based position in the source list. */
+  index: number
+  src: string
+  alt: string
+}
+
 export const defaultRipplableConfig: RipplableConfig = {
   wheelInputScale: 0.5,
   touchInputScale: 0.75,

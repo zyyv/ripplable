@@ -9,6 +9,7 @@
 - 无限循环复用固定数量的卡片槽位，不会随着滚动持续增加 DOM
 - 支持鼠标滚轮与触摸拖拽
 - 支持正向、反向自动播放，速度限制在 `0.5`～`24`
+- 点击卡片可暂停运动并在原位置突出显示，再次点击或按 Escape 恢复
 - 根据滚动速度动态计算跟随强度、波浪振幅与卡片倾斜
 - 图片切换前预解码，减少快速滚动时的闪烁
 - 支持字符串图片地址或自定义对象数据
@@ -121,10 +122,11 @@ export interface ResolvedRipplableItem<T = RipplableListItem> {
 | `fps` | `boolean` | `false` | 显示 FPS、平均帧耗时和估算丢帧数。 |
 | `autoplay` | `boolean \| number` | `false` | `true` 使用默认速度 `6`；数字指定速度；负数反向播放；`0` 保持启用但不推进。 |
 | `config` | `Partial<RipplableConfig>` | `{}` | 覆盖默认运动与空间参数。 |
-| `visibleCount` | `number` | `36` | 同时复用的卡片槽位数量。小于 `1` 时不渲染卡片。 |
+| `visibleCount` | `number` | `18` | 同时复用的卡片槽位数量。小于 `1` 时不渲染卡片。 |
 | `perspective` | `string` | `'2000px'` | 3D 场景的 CSS `perspective`。 |
 | `perspectiveOrigin` | `string` | `'10% 10%'` | 3D 场景的 CSS `perspective-origin`。 |
 | `laneTransform` | `string` | `'translateY(100px)'` | 应用于卡片通道容器的 CSS transform。 |
+| `focusOnClick` | `boolean` | `true` | 激活卡片时暂停运动，并在原位置突出显示该卡片。 |
 
 ### Autoplay 规则
 
@@ -176,8 +178,11 @@ export interface ResolvedRipplableItem<T = RipplableListItem> {
 | `update:config` / `config-change` | `RipplableConfig` |
 | `update:fps` / `fps-change` | `boolean` |
 | `update:autoplay` / `autoplay-change` | `boolean \| number` |
+| `image-click` | `RipplableImageEvent` |
+| `selection-change` | `RipplableImageEvent \| null` |
+| `image-close` | `RipplableImageEvent` |
 
-当前公开界面没有内置控制器，因此这些事件主要为自定义控制层和后续扩展保留。父级直接更新 Prop 时不会重复发送事件。
+卡片被选中时会立即发送 `image-click`。Payload 包含 `item`、`resolvedItem`、`index`、`src` 和 `alt`。选中期间，自动播放和输入运动会暂停，但不会修改 `autoplay` Prop；再次点击当前卡片或按 Escape 后，会继续使用原有的自动播放设置。
 
 ## 运动参数
 
@@ -224,6 +229,7 @@ import type {
   ResolvedRipplableItem,
   RipplableAutoplay,
   RipplableConfig,
+  RipplableImageEvent,
   RipplableListItem,
 } from 'ripplable'
 

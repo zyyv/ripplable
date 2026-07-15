@@ -9,6 +9,7 @@ An infinite, flowing 3D card lane component for Vue 3. It uses `requestAnimation
 - Reuses a fixed number of card slots for infinite looping, preventing the DOM from growing as you scroll
 - Supports mouse wheel and touch drag input
 - Supports forward and reverse autoplay, with speed limited to `0.5`–`24`
+- Click-to-select styling pauses motion in place; click again or press Escape to resume
 - Dynamically calculates follow strength, wave amplitude, and card tilt based on scroll velocity
 - Decodes images before switching to reduce flicker during fast scrolling
 - Accepts image URL strings or custom object data
@@ -121,10 +122,11 @@ export interface ResolvedRipplableItem<T = RipplableListItem> {
 | `fps` | `boolean` | `false` | Displays FPS, average frame time, and estimated dropped frames. |
 | `autoplay` | `boolean \| number` | `false` | `true` uses the default speed of `6`; a number sets the speed; negative values play in reverse; `0` remains enabled without advancing. |
 | `config` | `Partial<RipplableConfig>` | `{}` | Overrides the default motion and spatial parameters. |
-| `visibleCount` | `number` | `36` | Number of card slots reused at once. Values below `1` render no cards. |
+| `visibleCount` | `number` | `18` | Number of card slots reused at once. Values below `1` render no cards. |
 | `perspective` | `string` | `'2000px'` | CSS `perspective` for the 3D scene. |
 | `perspectiveOrigin` | `string` | `'10% 10%'` | CSS `perspective-origin` for the 3D scene. |
 | `laneTransform` | `string` | `'translateY(100px)'` | CSS transform applied to the card lane container. |
+| `focusOnClick` | `boolean` | `true` | Pauses motion and highlights the activated card in place. |
 
 ### Autoplay Rules
 
@@ -176,8 +178,11 @@ When its internal state changes actively, the component emits both Vue `update:*
 | `update:config` / `config-change` | `RipplableConfig` |
 | `update:fps` / `fps-change` | `boolean` |
 | `update:autoplay` / `autoplay-change` | `boolean \| number` |
+| `image-click` | `RipplableImageEvent` |
+| `selection-change` | `RipplableImageEvent \| null` |
+| `image-close` | `RipplableImageEvent` |
 
-The current public interface does not include built-in controls, so these events are primarily reserved for custom control layers and future extensions. Updating a prop directly from the parent does not emit the event again.
+`image-click` is emitted as soon as a card is selected. Its payload contains `item`, `resolvedItem`, `index`, `src`, and `alt`. While a card is selected, autoplay and input motion are paused without changing the `autoplay` prop; selecting it again or pressing Escape resumes the previous autoplay setting.
 
 ## Motion Configuration
 
@@ -224,6 +229,7 @@ import type {
   ResolvedRipplableItem,
   RipplableAutoplay,
   RipplableConfig,
+  RipplableImageEvent,
   RipplableListItem,
 } from 'ripplable'
 

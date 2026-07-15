@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 
 import {
@@ -11,6 +11,7 @@ import {
   type RipplableAutoplay,
   type ResolvedRipplableItem,
   type RipplableConfig,
+  type RipplableImageEvent,
   type RipplableListItem,
 } from './ripplable'
 
@@ -27,11 +28,15 @@ interface SlotRuntimeState {
   pendingListIndex: number
   swapRequestId: number
   isHidden: boolean
+  opacity: number
   shadeOpacity: number
 }
 
 const CARD_WIDTH = 320
 const CARD_HEIGHT = 384
+const SELECTION_TRANSITION_MS = 420
+const SELECTION_TRANSITION_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
+const AUTOPLAY_RESUME_MS = 650
 
 const props = withDefaults(defineProps<{
   /**
@@ -167,14 +172,21 @@ const props = withDefaults(defineProps<{
    * ```
    */
   laneTransform?: string
+
+  /**
+   * Selects a card in place and pauses motion when it is activated.
+   * 点击卡片时是否暂停运动并在原位置突出显示图片。
+   */
+  focusOnClick?: boolean
 }>(), {
   fps: false,
   autoplay: false,
   config: () => ({}),
-  visibleCount: 36,
+  visibleCount: 18,
   perspective: '2000px',
   perspectiveOrigin: '10% 10%',
   laneTransform: 'translateY(100px)',
+  focusOnClick: true,
 })
 
 defineSlots<{
@@ -197,6 +209,9 @@ const emit = defineEmits<{
   (event: 'fps-change', value: boolean): void
   (event: 'update:autoplay', value: RipplableAutoplay): void
   (event: 'autoplay-change', value: RipplableAutoplay): void
+  (event: 'image-click', value: RipplableImageEvent): void
+  (event: 'selection-change', value: RipplableImageEvent | null): void
+  (event: 'image-close', value: RipplableImageEvent): void
 }>()
 
 const rootRef = ref<HTMLDivElement | null>(null)
@@ -212,7 +227,10 @@ const fpsStats = {
 }
 
 const renderSlots = ref<RenderSlotState[]>([])
-const slotStates = ref<SlotRuntimeState[]>([])
+const slotStates = shallowRef<SlotRuntimeState[]>([])
+const selection = shallowRef<RipplableImageEvent | null>(null)
+const selectedSlotIndex = shallowRef<number | null>(null)
+const isSelectionRestoring = shallowRef(false)
 const motionConfig = reactive(createRipplableConfig(props.config))
 const fpsEnabled = ref(props.fps)
 const initialAutoplay = normalizeRipplableAutoplay(props.autoplay)
@@ -220,14 +238,22 @@ const autoplayEnabled = ref(initialAutoplay.enabled)
 const autoplaySpeed = ref(initialAutoplay.speed)
 const autoplay = computed<RipplableAutoplay>(() => (autoplayEnabled.value ? autoplaySpeed.value : false))
 
-const scrollTarget = ref(0)
-const scrollCurrent = ref(0)
-const inputVelocity = ref(0)
-const velocity = ref(0)
-const waveAmplitude = ref(0)
-const rafId = ref(0)
-const timeRef = ref(0)
-const sceneVersion = ref(0)
+let scrollTarget = 0
+let scrollCurrent = 0
+let inputVelocity = 0
+let velocity = 0
+let waveAmplitude = 0
+let rafId = 0
+let timeRef = 0
+let sceneVersion = 0
+let imageWarmupId = 0
+let selectionFrameId = 0
+let selectionCloseTimer = 0
+let selectedCardElement: HTMLDivElement | null = null
+let selectedCardBaseTransform = ''
+let isSelectionClosing = false
+let autoplayResumeStartTime = 0
+let autoplayResumeWaveAmplitude = 0
 
 const center = computed(() => Math.floor(props.visibleCount / 2))
 const normalizedList = computed(() => props.list.map((item, index) => normalizeRipplableItem(item, index)))
@@ -319,8 +345,49 @@ function ensureImageDecoded(src: string) {
   return promise
 }
 
+function scheduleImageWarmup(items: ResolvedRipplableItem[]) {
+  cancelImageWarmup()
+
+  const queue = [...new Map(items.map(item => [item.src, item])).values()]
+  let index = 0
+
+  const scheduleNext = () => {
+    if (index >= queue.length)
+      return
+
+    if ('requestIdleCallback' in window) {
+      imageWarmupId = window.requestIdleCallback(() => runNext(), { timeout: 500 })
+    }
+    else {
+      imageWarmupId = globalThis.setTimeout(runNext, 32)
+    }
+  }
+
+  const runNext = () => {
+    const item = queue[index++]
+    if (!item)
+      return
+
+    void ensureImageDecoded(item.src).finally(scheduleNext)
+  }
+
+  scheduleNext()
+}
+
+function cancelImageWarmup() {
+  if (!imageWarmupId)
+    return
+
+  if ('cancelIdleCallback' in window)
+    window.cancelIdleCallback(imageWarmupId)
+  else
+    globalThis.clearTimeout(imageWarmupId)
+
+  imageWarmupId = 0
+}
+
 function syncRenderSlots(items = normalizedList.value) {
-  sceneVersion.value += 1
+  sceneVersion += 1
 
   if (!items.length || props.visibleCount < 1) {
     renderSlots.value = []
@@ -329,7 +396,7 @@ function syncRenderSlots(items = normalizedList.value) {
     return
   }
 
-  const scrollPos = scrollCurrent.value / motionConfig.spacingX
+  const scrollPos = scrollCurrent / motionConfig.spacingX
   const baseIndex = Math.floor(scrollPos)
   const nextRenderSlots: RenderSlotState[] = []
   const nextSlotStates: SlotRuntimeState[] = []
@@ -352,6 +419,7 @@ function syncRenderSlots(items = normalizedList.value) {
       pendingListIndex: -1,
       swapRequestId: 0,
       isHidden: false,
+      opacity: -1,
       shadeOpacity: -1,
     })
   }
@@ -380,8 +448,217 @@ function getCardSlotProps(slot: RenderSlotState) {
 function registerScrollInput(delta: number, inputType: 'wheel' | 'touch') {
   const inputScale = inputType === 'touch' ? motionConfig.touchInputScale : motionConfig.wheelInputScale
 
-  scrollTarget.value += delta * inputScale
-  inputVelocity.value = inputVelocity.value * 0.45 + delta * motionConfig.inputVelocityGain
+  if (selection.value)
+    return
+
+  scrollTarget += delta * inputScale
+  inputVelocity = inputVelocity * 0.45 + delta * motionConfig.inputVelocityGain
+}
+
+function createImageEvent(slot: RenderSlotState): RipplableImageEvent | null {
+  if (!slot.item)
+    return null
+
+  return {
+    item: slot.item.raw,
+    resolvedItem: slot.item,
+    index: slot.listIndex,
+    src: slot.item.src,
+    alt: slot.item.alt,
+  }
+}
+
+function getSelectionTransitionDuration() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ? 0
+    : SELECTION_TRANSITION_MS
+}
+
+function getSelectedCardTransform(baseTransform: string) {
+  const position = baseTransform.match(/translate3d\(([^,]+),\s*([^,]+),\s*([^)]+)\)/)
+  if (!position)
+    return baseTransform
+
+  return `translate3d(${position[1]}, ${position[2]}, ${position[3]}) rotateY(0deg) rotateX(0deg) scale(1.04)`
+}
+
+function getAutoplayResumeState(time: number) {
+  if (!autoplayResumeStartTime)
+    return { progress: 1, scale: 1 }
+
+  const progress = Math.min(1, Math.max(0, (time - autoplayResumeStartTime) / AUTOPLAY_RESUME_MS))
+  if (progress >= 1) {
+    autoplayResumeStartTime = 0
+    return { progress: 1, scale: 1 }
+  }
+
+  return {
+    progress,
+    scale: progress * progress * (3 - 2 * progress),
+  }
+}
+
+function cancelSelectionTransition() {
+  if (selectionFrameId) {
+    cancelAnimationFrame(selectionFrameId)
+    selectionFrameId = 0
+  }
+
+  if (selectionCloseTimer) {
+    window.clearTimeout(selectionCloseTimer)
+    selectionCloseTimer = 0
+  }
+
+  isSelectionClosing = false
+}
+
+function restoreSelectedCard() {
+  const card = selectedCardElement
+  if (!card)
+    return
+
+  card.style.transform = selectedCardBaseTransform
+}
+
+function animateCardToFront(slot: RenderSlotState) {
+  const card = cardsRef.value[slot.slotIndex]
+  if (!card)
+    return
+
+  selectedCardElement = card
+  selectedCardBaseTransform = card.style.transform
+
+  const duration = getSelectionTransitionDuration()
+  card.style.transition = duration
+    ? `transform ${duration}ms ${SELECTION_TRANSITION_EASING}`
+    : 'none'
+
+  if (!duration) {
+    card.style.transform = getSelectedCardTransform(selectedCardBaseTransform)
+    return
+  }
+
+  selectionFrameId = requestAnimationFrame(() => {
+    selectionFrameId = 0
+    if (selectedCardElement === card)
+      card.style.transform = getSelectedCardTransform(selectedCardBaseTransform)
+  })
+}
+
+function finishClosingSelection(previousSelection: RipplableImageEvent, card: HTMLDivElement | null) {
+  if (card)
+    card.style.transition = ''
+
+  selectedCardElement = null
+  selectedCardBaseTransform = ''
+  selectedSlotIndex.value = null
+  selection.value = null
+  isSelectionRestoring.value = false
+  isSelectionClosing = false
+  selectionCloseTimer = 0
+  autoplayResumeStartTime = autoplayEnabled.value ? performance.now() : 0
+  emit('selection-change', null)
+  emit('image-close', previousSelection)
+}
+
+function selectImage(slot: RenderSlotState) {
+  if (!props.focusOnClick)
+    return
+
+  if (selectedSlotIndex.value === slot.slotIndex) {
+    closeSelection()
+    return
+  }
+
+  const nextSelection = createImageEvent(slot)
+  if (!nextSelection)
+    return
+
+  cancelSelectionTransition()
+  isSelectionRestoring.value = false
+
+  const previousCard = selectedCardElement
+  if (previousCard) {
+    restoreSelectedCard()
+    const duration = getSelectionTransitionDuration()
+    window.setTimeout(() => {
+      if (previousCard !== selectedCardElement)
+        previousCard.style.transition = ''
+    }, duration)
+  }
+
+  scrollTarget = scrollCurrent
+  inputVelocity = 0
+  velocity = 0
+  autoplayResumeWaveAmplitude = waveAmplitude
+  autoplayResumeStartTime = 0
+  selectedSlotIndex.value = slot.slotIndex
+  selection.value = nextSelection
+  animateCardToFront(slot)
+  emit('image-click', nextSelection)
+  emit('selection-change', nextSelection)
+}
+
+function closeSelection() {
+  const previousSelection = selection.value
+  if (!previousSelection || isSelectionClosing)
+    return
+
+  cancelSelectionTransition()
+  isSelectionClosing = true
+  isSelectionRestoring.value = true
+
+  const card = selectedCardElement
+  const duration = getSelectionTransitionDuration()
+  restoreSelectedCard()
+
+  if (!duration) {
+    finishClosingSelection(previousSelection, card)
+    return
+  }
+
+  selectionCloseTimer = window.setTimeout(() => {
+    if (selection.value === previousSelection)
+      finishClosingSelection(previousSelection, card)
+  }, duration)
+}
+
+let pointerStart: { x: number, y: number, slotIndex: number } | null = null
+
+function handleCardPointerDown(event: PointerEvent, slot: RenderSlotState) {
+  if (!props.focusOnClick || isInteractiveTarget(event.target))
+    return
+
+  pointerStart = { x: event.clientX, y: event.clientY, slotIndex: slot.slotIndex }
+}
+
+function handleCardPointerUp(event: PointerEvent, slot: RenderSlotState) {
+  if (!pointerStart || pointerStart.slotIndex !== slot.slotIndex)
+    return
+
+  const distance = Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y)
+  pointerStart = null
+
+  if (distance <= 8 && !isInteractiveTarget(event.target))
+    selectImage(slot)
+}
+
+function handleCardKeydown(event: KeyboardEvent, slot: RenderSlotState) {
+  if (event.key === 'Escape' && selection.value) {
+    event.preventDefault()
+    closeSelection()
+    return
+  }
+
+  if (!props.focusOnClick || (event.key !== 'Enter' && event.key !== ' '))
+    return
+
+  event.preventDefault()
+  selectImage(slot)
+}
+
+function isInteractiveTarget(target: EventTarget | null) {
+  return target instanceof Element && Boolean(target.closest('[data-ripplable-interactive]'))
 }
 
 function resetFpsOverlay() {
@@ -395,10 +672,9 @@ watch(() => props.config, nextConfig => replaceConfig(nextConfig ?? {}, false), 
 watch(() => props.fps, nextValue => setFps(nextValue, false))
 watch(() => props.autoplay, nextValue => setAutoplay(nextValue, false))
 watch(normalizedList, (items) => {
-  for (const item of items)
-    void ensureImageDecoded(item.src)
-
   syncRenderSlots(items)
+  if (typeof window !== 'undefined')
+    scheduleImageWarmup(items)
 }, { deep: true, immediate: true })
 watch(() => props.visibleCount, () => syncRenderSlots())
 watch(fpsEnabled, (nextValue) => {
@@ -409,6 +685,7 @@ watch(fpsEnabled, (nextValue) => {
 let handleWheel: ((event: WheelEvent) => void) | null = null
 let handleTouchStart: ((event: TouchEvent) => void) | null = null
 let handleTouchMove: ((event: TouchEvent) => void) | null = null
+let handleKeydown: ((event: KeyboardEvent) => void) | null = null
 let eventSurface: HTMLDivElement | null = null
 
 onMounted(() => {
@@ -417,9 +694,6 @@ onMounted(() => {
     return
 
   resetFpsOverlay()
-
-  const isInteractiveTarget = (target: EventTarget | null) =>
-    target instanceof Element && Boolean(target.closest('[data-ripplable-interactive]'))
 
   handleWheel = (event: WheelEvent) => {
     if (isInteractiveTarget(event.target))
@@ -448,15 +722,24 @@ onMounted(() => {
     registerScrollInput(dy, 'touch')
   }
 
+  handleKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && selection.value)
+      closeSelection()
+  }
+
   const animate = (time: number) => {
-    const frameDelta = timeRef.value ? time - timeRef.value : 16.667
+    const frameDelta = timeRef ? time - timeRef : 16.667
     const dt = frameDelta / 16.667
-    timeRef.value = time
+    timeRef = time
 
-    if (autoplayEnabled.value)
-      scrollTarget.value += autoplaySpeed.value * Math.min(dt, 3)
+    const resumeState = autoplayEnabled.value && !selection.value
+      ? getAutoplayResumeState(time)
+      : { progress: 1, scale: 1 }
 
-    inputVelocity.value *= motionConfig.inputVelocityDecay ** dt
+    if (autoplayEnabled.value && !selection.value)
+      scrollTarget += autoplaySpeed.value * resumeState.scale * Math.min(dt, 3)
+
+    inputVelocity *= motionConfig.inputVelocityDecay ** dt
 
     if (!fpsStats.lastSampleTime)
       fpsStats.lastSampleTime = time
@@ -482,30 +765,38 @@ onMounted(() => {
       fpsStats.droppedFramesSinceSample = 0
     }
 
-    const previousScroll = scrollCurrent.value
+    if (selection.value) {
+      rafId = requestAnimationFrame(animate)
+      return
+    }
+
+    const previousScroll = scrollCurrent
     const followStrength = Math.min(
       motionConfig.maxScrollFollow,
-      motionConfig.baseScrollFollow + Math.abs(inputVelocity.value) * motionConfig.followVelocityInfluence,
+      motionConfig.baseScrollFollow + Math.abs(inputVelocity) * motionConfig.followVelocityInfluence,
     )
-    scrollCurrent.value += (scrollTarget.value - scrollCurrent.value) * followStrength * Math.min(dt, 3)
-    velocity.value = (scrollCurrent.value - previousScroll) / Math.max(dt, 0.5)
+    scrollCurrent += (scrollTarget - scrollCurrent) * followStrength * Math.min(dt, 3)
+    velocity = (scrollCurrent - previousScroll) / Math.max(dt, 0.5)
 
-    const speed = Math.abs(velocity.value)
-    const targetWave = Math.min(motionConfig.maxWaveAmplitude, speed * motionConfig.waveScrollGain)
+    const speed = Math.abs(velocity)
+    const velocityWave = Math.min(motionConfig.maxWaveAmplitude, speed * motionConfig.waveScrollGain)
+    const targetWave = resumeState.progress < 1
+      ? autoplayResumeWaveAmplitude + (velocityWave - autoplayResumeWaveAmplitude) * resumeState.progress
+      : velocityWave
     const waveResponse = Math.min(
       motionConfig.maxWaveResponse,
       motionConfig.waveResponseBase + speed * motionConfig.waveResponseGain,
     )
-    waveAmplitude.value += (targetWave - waveAmplitude.value) * waveResponse
+    waveAmplitude += (targetWave - waveAmplitude) * waveResponse
 
     const items = normalizedList.value
     const activeSlots = renderSlots.value
     const runtimeSlots = slotStates.value
 
     if (items.length && activeSlots.length) {
-      const scrollPos = scrollCurrent.value / motionConfig.spacingX
+      const scrollPos = scrollCurrent / motionConfig.spacingX
       const baseIndex = Math.floor(scrollPos)
-      const wave = waveAmplitude.value
+      const wave = waveAmplitude
 
       for (let i = 0; i < activeSlots.length; i++) {
         const card = cardsRef.value[i]
@@ -529,8 +820,13 @@ onMounted(() => {
         const opacity = isHidden ? 0 : 1
         const shadeOpacity = Math.min(0.86, dist * 0.085)
 
-        card.style.transform = `translate3d(${centeredX}px, ${centeredY + waveOffset}px, ${z}px) rotateY(-50deg) rotateX(${tiltX}deg)`
-        card.style.opacity = String(opacity)
+        if (!isHidden || !slotState.isHidden)
+          card.style.transform = `translate3d(${centeredX}px, ${centeredY + waveOffset}px, ${z}px) rotateY(-50deg) rotateX(${tiltX}deg)`
+
+        if (slotState.opacity !== opacity) {
+          card.style.opacity = String(opacity)
+          slotState.opacity = opacity
+        }
 
         if (slotState.isHidden !== isHidden) {
           card.style.visibility = isHidden ? 'hidden' : 'visible'
@@ -567,7 +863,7 @@ onMounted(() => {
           continue
 
         const requestId = slotState.swapRequestId + 1
-        const currentSceneVersion = sceneVersion.value
+        const currentSceneVersion = sceneVersion
 
         slotState.pendingListIndex = nextListIndex
         slotState.swapRequestId = requestId
@@ -577,7 +873,7 @@ onMounted(() => {
           const currentSlotState = slotStates.value[i]
           if (!currentRenderSlot || !currentSlotState)
             return
-          if (sceneVersion.value !== currentSceneVersion)
+          if (sceneVersion !== currentSceneVersion)
             return
           if (currentSlotState.swapRequestId !== requestId)
             return
@@ -593,13 +889,14 @@ onMounted(() => {
       }
     }
 
-    rafId.value = requestAnimationFrame(animate)
+    rafId = requestAnimationFrame(animate)
   }
 
   eventSurface.addEventListener('wheel', handleWheel, { passive: false })
   eventSurface.addEventListener('touchstart', handleTouchStart, { passive: true })
   eventSurface.addEventListener('touchmove', handleTouchMove, { passive: false })
-  rafId.value = requestAnimationFrame(animate)
+  window.addEventListener('keydown', handleKeydown)
+  rafId = requestAnimationFrame(animate)
 })
 
 onBeforeUnmount(() => {
@@ -609,13 +906,20 @@ onBeforeUnmount(() => {
     eventSurface.removeEventListener('touchstart', handleTouchStart)
   if (eventSurface && handleTouchMove)
     eventSurface.removeEventListener('touchmove', handleTouchMove)
+  if (handleKeydown)
+    window.removeEventListener('keydown', handleKeydown)
 
-  cancelAnimationFrame(rafId.value)
+  cancelImageWarmup()
+  cancelSelectionTransition()
+  restoreSelectedCard()
+  if (selectedCardElement)
+    selectedCardElement.style.transition = ''
+  cancelAnimationFrame(rafId)
 })
 </script>
 
 <template>
-  <div ref="rootRef" class="ripplable">
+  <div ref="rootRef" class="ripplable" :class="{ 'ripplable--selected': selection && !isSelectionRestoring }">
     <div v-show="fpsEnabled" ref="fpsRef" class="ripplable__fps">
       FPS --
       {{ '\n' }}
@@ -636,6 +940,18 @@ onBeforeUnmount(() => {
             :key="slot.slotId"
             :ref="element => setCardRef(slot.slotIndex, element)"
             class="ripplable__card"
+            :class="{
+              'ripplable__card--interactive': focusOnClick,
+              'ripplable__card--selected': selectedSlotIndex === slot.slotIndex,
+              'ripplable__card--restoring': isSelectionRestoring && selectedSlotIndex === slot.slotIndex,
+            }"
+            :role="focusOnClick ? 'button' : undefined"
+            :tabindex="focusOnClick ? 0 : undefined"
+            :aria-label="focusOnClick ? (slot.item?.alt || `Open image ${slot.listIndex + 1}`) : undefined"
+            @pointerdown="handleCardPointerDown($event, slot)"
+            @pointerup="handleCardPointerUp($event, slot)"
+            @pointercancel="pointerStart = null"
+            @keydown="handleCardKeydown($event, slot)"
           >
             <slot name="card" v-bind="getCardSlotProps(slot)">
               <div class="ripplable__card-media">
@@ -646,7 +962,7 @@ onBeforeUnmount(() => {
                   class="ripplable__card-image"
                   decoding="async"
                   draggable="false"
-                  loading="eager"
+                  loading="lazy"
                 >
                 <div class="ripplable__card-shade" />
               </div>
@@ -659,5 +975,6 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
+
   </div>
 </template>

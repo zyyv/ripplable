@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { Ripplable } from 'ripplable'
+import type { RipplableImageEvent } from 'ripplable'
+import { shallowRef } from 'vue'
+
+const lastClicked = shallowRef<RipplableImageEvent | null>(null)
 
 const imageSources = [
   '/images/11d2f7cd-e5b9-482d-8066-a009687161bc.png',
@@ -20,33 +24,46 @@ const imageSources = [
   '/images/f67ff078-008a-461c-9863-7693edc89761.png',
 ]
 
+function handleImageClick(event: RipplableImageEvent) {
+  lastClicked.value = event
+}
 </script>
 
 <template>
   <div class="main-body">
-    <Ripplable :autoplay="true" :fps="true" :list="imageSources" >
-    <!-- <template #card="{ src, label, index }">
-      <div class="demo-card">
-        <img :src="src" alt="" class="demo-card__image">
-        <div class="demo-card__shade" />
-        <div class="demo-card__meta">
-          <span class="demo-card__eyebrow">Frame {{ label }}</span>
-          <strong class="demo-card__title">Visual {{ index + 1 }}</strong>
-        </div>
+    <Ripplable
+      :autoplay="true"
+      :fps="true"
+      :list="imageSources"
+      @image-click="handleImageClick"
+    >
+      <div v-if="lastClicked" class="event-status" data-ripplable-interactive>
+        External event · image {{ lastClicked.index + 1 }}
       </div>
-    </template> -->
-  </Ripplable>
+    </Ripplable>
   </div>
-  
 </template>
 
 <style scoped>
 
-.main-body{
+.main-body {
   margin: 100px auto;
   width: 80%;
   height: 80vh;
   overflow: hidden;
+}
+
+.event-status {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  padding: 9px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(8, 10, 14, 0.84);
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 11px;
+  letter-spacing: 0.03em;
 }
 
 .demo-card {
