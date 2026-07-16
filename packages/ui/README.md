@@ -125,6 +125,7 @@ export interface ResolvedRipplableItem<T = RipplableListItem> {
 | `perspectiveOrigin` | `string` | `'10% 10%'` | CSS `perspective-origin` for the 3D scene. |
 | `laneTransform` | `string` | `'translateY(100px)'` | CSS transform applied to the card lane container. |
 | `focusOnClick` | `boolean` | `true` | Pauses motion and highlights the activated card in place. |
+| `dimInactiveCards` | `boolean` | `true` | Reduces the brightness and saturation of inactive default or custom cards while one is selected. |
 
 ### Autoplay Rules
 

@@ -75,6 +75,12 @@
   outline-offset: 6px;
 }
 
+.ripplable__card-slot {
+  width: 100%;
+  height: 100%;
+  transition: filter 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .ripplable__card-media {
   position: absolute;
   inset: 0;
@@ -90,7 +96,8 @@
     box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.ripplable--selected .ripplable__card:not(.ripplable__card--selected) .ripplable__card-media {
+.ripplable--selected.ripplable--dim-inactive-cards .ripplable__card:not(.ripplable__card--selected) .ripplable__card-media,
+.ripplable--selected.ripplable--dim-inactive-cards .ripplable__card:not(.ripplable__card--selected) .ripplable__card-slot {
   filter: saturate(0.5) brightness(0.58);
 }
 
@@ -108,7 +115,9 @@
   height: 100%;
   object-fit: cover;
   pointer-events: none;
+  transform: translateZ(0);
   backface-visibility: hidden;
+  will-change: transform;
 }
 
 .ripplable__card-shade {
@@ -137,6 +146,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ripplable__card,
+  .ripplable__card-slot,
   .ripplable__card-media,
   .ripplable__card-label {
     transition: none;

@@ -127,6 +127,7 @@ export interface ResolvedRipplableItem<T = RipplableListItem> {
 | `perspectiveOrigin` | `string` | `'10% 10%'` | 3D 场景的 CSS `perspective-origin`。 |
 | `laneTransform` | `string` | `'translateY(100px)'` | 应用于卡片通道容器的 CSS transform。 |
 | `focusOnClick` | `boolean` | `true` | 激活卡片时暂停运动，并在原位置突出显示该卡片。 |
+| `dimInactiveCards` | `boolean` | `true` | 选中卡片时降低其他默认卡片或自定义卡片的亮度和饱和度。 |
 
 ### Autoplay 规则
 

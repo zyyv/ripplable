@@ -24,6 +24,7 @@ interface RenderSlotState {
 }
 
 interface SlotRuntimeState {
+  logicalIndex: number
   currentListIndex: number
   pendingListIndex: number
   swapRequestId: number
@@ -178,6 +179,15 @@ const props = withDefaults(defineProps<{
    * 点击卡片时是否暂停运动并在原位置突出显示图片。
    */
   focusOnClick?: boolean
+
+  /**
+   * Reduces the brightness and saturation of inactive cards while one is selected.
+   * Applies to both the default card and custom content rendered through the `card` slot.
+   *
+   * 选中卡片时是否降低其他卡片的亮度和饱和度。
+   * 默认卡片和通过 `card` 插槽渲染的自定义卡片都会生效。
+   */
+  dimInactiveCards?: boolean
 }>(), {
   fps: false,
   autoplay: false,
@@ -187,6 +197,7 @@ const props = withDefaults(defineProps<{
   perspectiveOrigin: '10% 10%',
   laneTransform: 'translateY(100px)',
   focusOnClick: true,
+  dimInactiveCards: true,
 })
 
 defineSlots<{
@@ -415,6 +426,7 @@ function syncRenderSlots(items = normalizedList.value) {
     })
 
     nextSlotStates.push({
+      logicalIndex,
       currentListIndex: listIndex,
       pendingListIndex: -1,
       swapRequestId: 0,
@@ -795,8 +807,9 @@ onMounted(() => {
 
     if (items.length && activeSlots.length) {
       const scrollPos = scrollCurrent / motionConfig.spacingX
-      const baseIndex = Math.floor(scrollPos)
       const wave = waveAmplitude
+      const recycleBoundary = center.value
+      const scrollDirection = Math.sign(scrollCurrent - previousScroll)
 
       for (let i = 0; i < activeSlots.length; i++) {
         const card = cardsRef.value[i]
@@ -805,8 +818,23 @@ onMounted(() => {
         if (!card || !renderSlot || !slotState)
           continue
 
-        const logicalIndex = baseIndex + i - center.value
-        const pos = logicalIndex - scrollPos
+        let { logicalIndex } = slotState
+        let pos = logicalIndex - scrollPos
+
+        if (scrollDirection > 0) {
+          while (pos < -recycleBoundary) {
+            logicalIndex += activeSlots.length
+            pos = logicalIndex - scrollPos
+          }
+        }
+        else if (scrollDirection < 0) {
+          while (pos > recycleBoundary) {
+            logicalIndex -= activeSlots.length
+            pos = logicalIndex - scrollPos
+          }
+        }
+
+        slotState.logicalIndex = logicalIndex
         const x = pos * motionConfig.spacingX
         const y = pos * motionConfig.spacingY
         const z = pos * motionConfig.spacingZ
@@ -820,8 +848,7 @@ onMounted(() => {
         const opacity = isHidden ? 0 : 1
         const shadeOpacity = Math.min(0.86, dist * 0.085)
 
-        if (!isHidden || !slotState.isHidden)
-          card.style.transform = `translate3d(${centeredX}px, ${centeredY + waveOffset}px, ${z}px) rotateY(-50deg) rotateX(${tiltX}deg)`
+        card.style.transform = `translate3d(${centeredX}px, ${centeredY + waveOffset}px, ${z}px) rotateY(-50deg) rotateX(${tiltX}deg)`
 
         if (slotState.opacity !== opacity) {
           card.style.opacity = String(opacity)
@@ -859,7 +886,7 @@ onMounted(() => {
           continue
         }
 
-        if (isHidden || slotState.pendingListIndex === nextListIndex)
+        if (slotState.pendingListIndex === nextListIndex)
           continue
 
         const requestId = slotState.swapRequestId + 1
@@ -919,7 +946,14 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="rootRef" class="ripplable" :class="{ 'ripplable--selected': selection && !isSelectionRestoring }">
+  <div
+    ref="rootRef"
+    class="ripplable"
+    :class="{
+      'ripplable--selected': selection && !isSelectionRestoring,
+      'ripplable--dim-inactive-cards': dimInactiveCards,
+    }"
+  >
     <div v-show="fpsEnabled" ref="fpsRef" class="ripplable__fps">
       FPS --
       {{ '\n' }}
@@ -953,7 +987,11 @@ onBeforeUnmount(() => {
             @pointercancel="pointerStart = null"
             @keydown="handleCardKeydown($event, slot)"
           >
-            <slot name="card" v-bind="getCardSlotProps(slot)">
+            <div v-if="$slots.card" class="ripplable__card-slot">
+              <slot name="card" v-bind="getCardSlotProps(slot)" />
+            </div>
+
+            <template v-else>
               <div class="ripplable__card-media">
                 <img
                   v-if="slot.item"
@@ -962,7 +1000,7 @@ onBeforeUnmount(() => {
                   class="ripplable__card-image"
                   decoding="async"
                   draggable="false"
-                  loading="lazy"
+                  loading="eager"
                 >
                 <div class="ripplable__card-shade" />
               </div>
@@ -970,7 +1008,7 @@ onBeforeUnmount(() => {
               <span class="ripplable__card-label">
                 {{ slot.label }}
               </span>
-            </slot>
+            </template>
           </div>
         </div>
       </div>

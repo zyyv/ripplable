@@ -26,6 +26,7 @@ const imageSources = [
 
 function handleImageClick(event: RipplableImageEvent) {
   lastClicked.value = event
+  console.log('[Ripplable playground] image-click', event)
 }
 </script>
 
@@ -33,10 +34,28 @@ function handleImageClick(event: RipplableImageEvent) {
   <div class="main-body">
     <Ripplable
       :autoplay="true"
+      :dim-inactive-cards="true"
       :fps="true"
       :list="imageSources"
       @image-click="handleImageClick"
     >
+      <template #card="{ src, alt, label }">
+        <article class="demo-card">
+          <img
+            :src="src"
+            :alt="alt || `Artwork ${label}`"
+            class="demo-card__image"
+            decoding="async"
+            draggable="false"
+          >
+          <div class="demo-card__shade" />
+          <div class="demo-card__meta">
+            <span class="demo-card__eyebrow">Ripplable collection</span>
+            <strong class="demo-card__title">Artwork {{ label }}</strong>
+          </div>
+        </article>
+      </template>
+
       <div v-if="lastClicked" class="event-status" data-ripplable-interactive>
         External event · image {{ lastClicked.index + 1 }}
       </div>
@@ -45,11 +64,10 @@ function handleImageClick(event: RipplableImageEvent) {
 </template>
 
 <style scoped>
-
 .main-body {
-  margin: 100px auto;
-  width: 80%;
-  height: 80vh;
+  /* margin: 100px auto; */
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
 }
 
