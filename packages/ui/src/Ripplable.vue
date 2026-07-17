@@ -366,12 +366,11 @@ function scheduleImageWarmup(items: ResolvedRipplableItem[]) {
     if (index >= queue.length)
       return
 
-    if ('requestIdleCallback' in window) {
-      imageWarmupId = window.requestIdleCallback(() => runNext(), { timeout: 500 })
-    }
-    else {
-      imageWarmupId = globalThis.setTimeout(runNext, 32)
-    }
+    const schedule = typeof window.requestIdleCallback === 'function'
+      ? window.requestIdleCallback
+      : (callback: () => void, _: any) => window.setTimeout(callback, 32)
+
+    imageWarmupId = schedule(() => runNext(), { timeout: 500 }) as number
   }
 
   const runNext = () => {
@@ -389,10 +388,10 @@ function cancelImageWarmup() {
   if (!imageWarmupId)
     return
 
-  if ('cancelIdleCallback' in window)
+  if (typeof window.cancelIdleCallback === 'function')
     window.cancelIdleCallback(imageWarmupId)
   else
-    globalThis.clearTimeout(imageWarmupId)
+    clearTimeout(imageWarmupId)
 
   imageWarmupId = 0
 }
