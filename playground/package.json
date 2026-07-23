@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "deploy": "pnpm run build && wrangler deploy",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -18,7 +17,6 @@
     "@vitejs/plugin-vue": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vue-tsc": "catalog:",
-    "wrangler": "catalog:"
+    "vue-tsc": "catalog:"
   }
 }
