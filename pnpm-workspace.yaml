@@ -7,6 +7,7 @@ allowBuilds:
   esbuild: true
   sharp: true
   unix-dgram: true
+  workerd: true
 
 catalog:
   '@antfu/eslint-config': ^9.1.0
@@ -19,3 +20,4 @@ catalog:
   vite: ^8.1.4
   vue: ^3.5.39
   vue-tsc: ^3.3.7
+  wrangler: ^4.113.0

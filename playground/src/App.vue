@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Ripplable } from 'ripplable'
+import 'ripplable/styles.css'
 import type { RipplableImageEvent } from 'ripplable'
 import { shallowRef } from 'vue'
 
@@ -65,7 +66,6 @@ function handleImageClick(event: RipplableImageEvent) {
 
 <style scoped>
 .main-body {
-  /* margin: 100px auto; */
   width: 100vw;
   height: 100vh;
   overflow: hidden;

@@ -8,6 +8,7 @@
     "dev": "pnpm -C packages/ui run dev",
     "build": "pnpm -r --parallel run build",
     "play": "pnpm -C playground run dev",
+    "deploy:playground": "pnpm -C playground run deploy",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "release": "bumpp -r --excute=\"pnpm i\"",
